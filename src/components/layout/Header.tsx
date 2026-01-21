@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { Home, Calendar, Search, Bell, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import shieldLogo from "@/assets/shield-logo.svg";
 import nameLogo from "@/assets/name-logo.svg";
 
 const navItems = [
@@ -19,9 +18,8 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={shieldLogo} alt="KeyKeep Shield" className="h-10 w-auto" />
-            <img src={nameLogo} alt="KeyKeep" className="h-6 w-auto" />
+          <Link to="/" className="flex items-center">
+            <img src={nameLogo} alt="KeyKeep" className="h-8 w-auto" />
           </Link>
 
           {/* Navigation */}
