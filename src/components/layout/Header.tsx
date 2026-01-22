@@ -1,7 +1,9 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Calendar, Search, Bell, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import nameLogo from "@/assets/name-logo.svg";
+import { useAuth } from "@/auth/AuthProvider";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
@@ -12,6 +14,13 @@ const navItems = [
 
 export function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-card border-b border-border">
@@ -49,6 +58,17 @@ export function Header() {
             >
               <Settings className="w-5 h-5" />
             </Link>
+
+            {user && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-2"
+                onClick={handleLogout}
+              >
+                Log out
+              </Button>
+            )}
           </nav>
         </div>
       </div>
