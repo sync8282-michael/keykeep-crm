@@ -13,6 +13,10 @@ import SearchPage from "./pages/SearchPage";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import AuthPage from "./pages/AuthPage";
+import { AuthProvider } from "@/auth/AuthProvider";
+import { RequireAuth } from "@/auth/RequireAuth";
+import { RedirectIfAuthed } from "@/auth/RedirectIfAuthed";
 
 const queryClient = new QueryClient();
 
@@ -35,16 +39,24 @@ const App = () => {
           }`}
         >
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/clients/:id" element={<ClientDetail />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <AuthProvider>
+              <Routes>
+                <Route element={<RedirectIfAuthed />}>
+                  <Route path="/auth" element={<AuthPage />} />
+                </Route>
+
+                <Route element={<RequireAuth />}>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/clients" element={<Clients />} />
+                  <Route path="/clients/:id" element={<ClientDetail />} />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/search" element={<SearchPage />} />
+                  <Route path="/notifications" element={<Notifications />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </AuthProvider>
           </BrowserRouter>
         </div>
       </TooltipProvider>
