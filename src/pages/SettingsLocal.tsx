@@ -496,11 +496,16 @@ export default function SettingsLocal() {
             </h2>
           </div>
           <div className="p-6 space-y-4">
-            {settings?.lastBackupDate && (
-              <p className="text-sm text-muted-foreground">
-                Last backup: {format(parseISO(settings.lastBackupDate), "PPP 'at' p")}
-              </p>
-            )}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Last Backup</p>
+                <p className="text-sm text-muted-foreground">
+                  {settings?.lastBackupDate 
+                    ? format(parseISO(settings.lastBackupDate), "PPP 'at' p")
+                    : "Never backed up"}
+                </p>
+              </div>
+            </div>
 
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
               <div>
