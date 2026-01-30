@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, MapPin, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, Loader2, Upload, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,8 +40,16 @@ const houseTypes = [
   { value: "land", label: "Land" },
 ];
 
+const contactMethods = [
+  { value: "email", label: "Email" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "sms", label: "SMS" },
+  { value: "phone", label: "Phone Call" },
+];
+
 export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: ClientFormLocalProps) {
   const { settings } = useSettings();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   
   const [name, setName] = useState(initialData?.name || "");
   const [address, setAddress] = useState(initialData?.address || "");
@@ -49,13 +57,58 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
   const [moveInDate, setMoveInDate] = useState<Date | undefined>(
     initialData?.moveInDate ? new Date(initialData.moveInDate) : undefined
   );
+  const [birthday, setBirthday] = useState<Date | undefined>(
+    initialData?.birthday ? new Date(initialData.birthday) : undefined
+  );
   const [email, setEmail] = useState(initialData?.email || "");
   const [phone, setPhone] = useState(initialData?.phone || "");
+  const [avatarPath, setAvatarPath] = useState(initialData?.avatarPath || "");
   const [imagePath, setImagePath] = useState(initialData?.imagePath || "");
   const [notes, setNotes] = useState(initialData?.notes || "");
   const [optInEmail, setOptInEmail] = useState(initialData?.optInEmail ?? true);
   const [optInWhatsApp, setOptInWhatsApp] = useState(initialData?.optInWhatsApp ?? false);
+  const [optInSMS, setOptInSMS] = useState(initialData?.optInSMS ?? false);
+  const [preferredContactMethod, setPreferredContactMethod] = useState<Client['preferredContactMethod']>(
+    initialData?.preferredContactMethod || 'email'
+  );
   const [fetchingStreetView, setFetchingStreetView] = useState(false);
+
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Image must be less than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Convert to base64 for local storage
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setAvatarPath(result);
+      toast({
+        title: "Photo Added",
+        description: "Profile photo has been set.",
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleFetchStreetView = async () => {
     if (!address.trim()) {
@@ -82,7 +135,6 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
       const encodedAddress = encodeURIComponent(address);
       const url = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodedAddress}&key=${settings.googleMapsApiKey}`;
       
-      // Verify the image is valid by checking if it loads
       const img = new Image();
       img.onload = () => {
         setImagePath(url);
@@ -120,12 +172,16 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
       address,
       houseType,
       moveInDate: moveInDate ? format(moveInDate, "yyyy-MM-dd") : new Date().toISOString().split('T')[0],
+      birthday: birthday ? format(birthday, "yyyy-MM-dd") : undefined,
       email,
       phone,
+      avatarPath: avatarPath || undefined,
       imagePath: imagePath || undefined,
       notes: notes || undefined,
       optInEmail,
       optInWhatsApp,
+      optInSMS,
+      preferredContactMethod,
     });
   };
 
@@ -135,16 +191,47 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
         {initialData ? "Edit Client" : "New Client"}
       </h3>
 
-      {/* Image Preview */}
-      {imagePath && (
-        <div className="rounded-lg overflow-hidden border border-border">
-          <img 
-            src={imagePath} 
-            alt="Property" 
-            className="w-full h-48 object-cover"
+      {/* Profile Photo & Property Image */}
+      <div className="flex flex-col sm:flex-row gap-6">
+        {/* Avatar Upload */}
+        <div className="flex flex-col items-center gap-3">
+          <Label className="text-sm text-muted-foreground">Profile Photo</Label>
+          <div 
+            className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer group"
+            onClick={() => avatarInputRef.current?.click()}
+          >
+            {avatarPath ? (
+              <img src={avatarPath} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <User className="w-10 h-10 text-muted-foreground" />
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Upload className="w-6 h-6 text-white" />
+            </div>
+          </div>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarUpload}
+            className="hidden"
           />
+          <span className="text-xs text-muted-foreground">Click to upload</span>
         </div>
-      )}
+
+        {/* Property Image Preview */}
+        {imagePath && (
+          <div className="flex-1 rounded-lg overflow-hidden border border-border">
+            <img 
+              src={imagePath} 
+              alt="Property" 
+              className="w-full h-40 object-cover"
+            />
+          </div>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
@@ -252,7 +339,49 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="imagePath">Image URL (optional)</Label>
+          <Label>Birthday (Optional)</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !birthday && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {birthday ? format(birthday, "PPP") : "Pick a date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={birthday}
+                onSelect={setBirthday}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Preferred Contact Method</Label>
+          <Select value={preferredContactMethod} onValueChange={(v) => setPreferredContactMethod(v as Client['preferredContactMethod'])}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select method" />
+            </SelectTrigger>
+            <SelectContent>
+              {contactMethods.map((method) => (
+                <SelectItem key={method.value} value={method.value}>
+                  {method.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="imagePath">Property Image URL (optional)</Label>
           <Input
             id="imagePath"
             placeholder="https://..."
@@ -274,8 +403,11 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
       </div>
 
       {/* Communication Preferences */}
-      <div className="space-y-4">
+      <div className="space-y-4 p-4 rounded-lg bg-muted/50">
         <Label className="text-base">Communication Preferences</Label>
+        <p className="text-sm text-muted-foreground">
+          Select which channels this client has opted in to receive messages.
+        </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -287,7 +419,7 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
               htmlFor="optInEmail"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              Email notifications
+              Email
             </label>
           </div>
           <div className="flex items-center space-x-2">
@@ -300,7 +432,20 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
               htmlFor="optInWhatsApp"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              WhatsApp messages
+              WhatsApp
+            </label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="optInSMS"
+              checked={optInSMS}
+              onCheckedChange={(checked) => setOptInSMS(checked === true)}
+            />
+            <label
+              htmlFor="optInSMS"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              SMS
             </label>
           </div>
         </div>

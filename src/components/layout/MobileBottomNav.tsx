@@ -1,10 +1,11 @@
-import { Home, Users, Calendar, Settings } from "lucide-react";
+import { Home, Users, Calendar, Settings, Bell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Clients", url: "/clients", icon: Users },
+  { title: "Alerts", url: "/notifications", icon: Bell },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "Settings", url: "/settings", icon: Settings },
 ];

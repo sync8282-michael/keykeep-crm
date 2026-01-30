@@ -10,6 +10,7 @@ import DashboardLocal from "./pages/DashboardLocal";
 import ClientsLocal from "./pages/ClientsLocal";
 import ClientDetailLocal from "./pages/ClientDetailLocal";
 import CalendarLocal from "./pages/CalendarLocal";
+import NotificationsLocal from "./pages/NotificationsLocal";
 import SettingsLocal from "./pages/SettingsLocal";
 import NotFound from "./pages/NotFound";
 
@@ -65,6 +66,7 @@ const App = () => {
               <Route path="/clients/new" element={<ClientsLocal />} />
               <Route path="/clients/:id" element={<ClientDetailLocal />} />
               <Route path="/calendar" element={<CalendarLocal />} />
+              <Route path="/notifications" element={<NotificationsLocal />} />
               <Route path="/settings" element={<SettingsLocal />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
