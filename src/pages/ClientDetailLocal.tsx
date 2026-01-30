@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format, parseISO, differenceInYears } from "date-fns";
-import { ArrowLeft, Mail, Phone, Calendar, Home, Edit, MessageCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Calendar, Home, Edit, MessageCircle, Trash2, Send, Loader2 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { ClientFormLocal } from "@/components/forms/ClientFormLocal";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ClientDetailSkeleton } from "@/components/skeletons/PageSkeletons";
 import { useLocalClient, useClientMutations } from "@/hooks/useLocalClients";
+import { useResendEmail } from "@/hooks/useResendEmail";
+import { useSettings } from "@/hooks/useSettings";
 import { cn } from "@/lib/utils";
 
 export default function ClientDetailLocal() {
@@ -28,6 +30,8 @@ export default function ClientDetailLocal() {
 
   const { client, isLoading } = useLocalClient(id);
   const { updateClient, deleteClient } = useClientMutations();
+  const { sendAnniversaryEmail, isSending } = useResendEmail();
+  const { settings } = useSettings();
 
   const handleUpdate = async (data: Parameters<typeof updateClient>[1]) => {
     if (!id) return;
@@ -207,13 +211,28 @@ export default function ClientDetailLocal() {
         <div className="card-elevated p-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">Send Anniversary Message</h2>
           <div className="flex flex-wrap gap-3">
+            {settings?.resendApiKey && (
+              <Button
+                onClick={() => sendAnniversaryEmail(client)}
+                disabled={!client.optInEmail || isSending}
+                className="gap-2"
+              >
+                {isSending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+                Send via Resend
+              </Button>
+            )}
             <Button
               onClick={handleSendEmail}
+              variant={settings?.resendApiKey ? "outline" : "default"}
               disabled={!client.optInEmail}
               className="gap-2"
             >
               <Mail className="w-4 h-4" />
-              Send Email
+              Open Email Client
             </Button>
             <Button
               onClick={handleSendWhatsApp}
@@ -228,6 +247,11 @@ export default function ClientDetailLocal() {
           {(!client.optInEmail && !client.optInWhatsApp) && (
             <p className="text-sm text-muted-foreground mt-3">
               This client has not opted in to receive messages.
+            </p>
+          )}
+          {!settings?.resendApiKey && (
+            <p className="text-sm text-muted-foreground mt-3">
+              Add your Resend API key in Settings to send emails directly.
             </p>
           )}
         </div>

@@ -22,6 +22,7 @@ export interface AppSettings {
   id: string;
   googleMapsApiKey?: string;
   resendApiKey?: string;
+  googleClientId?: string;
   lastBackupDate?: string;
   theme: 'light' | 'dark' | 'system';
 }
