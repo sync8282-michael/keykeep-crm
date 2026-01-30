@@ -26,29 +26,35 @@ interface PropertyFormProps {
   onSubmit: (data: PropertyFormData) => void;
   onCancel: () => void;
   initialData?: Partial<PropertyFormData>;
+  isLoading?: boolean;
 }
 
 export interface PropertyFormData {
   type: PropertyType;
   address: string;
-  purchaseDate: Date;
+  purchaseDate?: Date;
+  purchasePrice?: number;
   notes?: string;
 }
 
-export function PropertyForm({ clientId, onSubmit, onCancel, initialData }: PropertyFormProps) {
+export function PropertyForm({ clientId, onSubmit, onCancel, initialData, isLoading }: PropertyFormProps) {
   const [type, setType] = useState<PropertyType>(initialData?.type || "house");
   const [address, setAddress] = useState(initialData?.address || "");
   const [purchaseDate, setPurchaseDate] = useState<Date | undefined>(initialData?.purchaseDate);
+  const [purchasePrice, setPurchasePrice] = useState<string>(
+    initialData?.purchasePrice?.toString() || ""
+  );
   const [notes, setNotes] = useState(initialData?.notes || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!type || !address || !purchaseDate) return;
+    if (!type || !address) return;
 
     onSubmit({
       type,
       address,
       purchaseDate,
+      purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
       notes: notes || undefined,
     });
   };
@@ -70,13 +76,12 @@ export function PropertyForm({ clientId, onSubmit, onCancel, initialData }: Prop
               <SelectItem value="house">House</SelectItem>
               <SelectItem value="farm">Farm</SelectItem>
               <SelectItem value="apartment">Apartment</SelectItem>
-              <SelectItem value="plot">Plot</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label>Purchase Date</Label>
+          <Label>Purchase Date (Optional)</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -102,15 +107,28 @@ export function PropertyForm({ clientId, onSubmit, onCancel, initialData }: Prop
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
-        <Input
-          id="address"
-          placeholder="123 Oak Street, Springfield"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          required
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            placeholder="123 Oak Street, Springfield"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="purchasePrice">Purchase Price (Optional)</Label>
+          <Input
+            id="purchasePrice"
+            type="number"
+            placeholder="250000"
+            value={purchasePrice}
+            onChange={(e) => setPurchasePrice(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -125,11 +143,11 @@ export function PropertyForm({ clientId, onSubmit, onCancel, initialData }: Prop
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-border">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
-        <Button type="submit">
-          {initialData ? "Update Property" : "Add Property"}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : initialData ? "Update Property" : "Add Property"}
         </Button>
       </div>
     </form>
