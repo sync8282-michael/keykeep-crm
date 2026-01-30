@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      backup_snapshots: {
+        Row: {
+          backup_data: Json
+          clients_count: number
+          created_at: string
+          id: string
+          reminders_count: number
+          user_id: string
+        }
+        Insert: {
+          backup_data: Json
+          clients_count?: number
+          created_at?: string
+          id?: string
+          reminders_count?: number
+          user_id: string
+        }
+        Update: {
+          backup_data?: Json
+          clients_count?: number
+          created_at?: string
+          id?: string
+          reminders_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           birthday: string | null

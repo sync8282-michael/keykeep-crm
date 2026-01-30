@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor, Cloud, CloudOff, Bell, BellOff, RefreshCw } from "lucide-react";
+import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor, Cloud, CloudOff, Bell, RefreshCw, LogOut } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,19 +24,18 @@ import {
 } from "@/components/ui/select";
 import { useSettings } from "@/hooks/useSettings";
 import { useBackup } from "@/hooks/useBackup";
-import { useGoogleDrive } from "@/hooks/useGoogleDrive";
+import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useAuth } from "@/auth/AuthProvider";
 import { format, parseISO } from "date-fns";
 
 export default function SettingsLocal() {
   const { settings, updateSettings } = useSettings();
   const { exportData, importData, clearAllData } = useBackup();
-  const { isLoading: isDriveLoading, isConnected: isDriveConnected, connect: connectDrive, disconnect: disconnectDrive, backup: backupToDrive, restore: restoreFromDrive } = useGoogleDrive();
+  const { isLoading: isCloudLoading, lastBackup, fetchLastBackup, backupToCloud, restoreFromCloud, deleteCloudBackups } = useCloudBackup();
   const { isSupported: notificationsSupported, isEnabled: notificationsEnabled, requestPermission } = usePushNotifications();
+  const { user, signOut } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const [googleClientId, setGoogleClientId] = useState("");
-  const [showClientId, setShowClientId] = useState(false);
 
   const [googleApiKey, setGoogleApiKey] = useState("");
   const [showGoogleKey, setShowGoogleKey] = useState(false);
@@ -45,6 +44,11 @@ export default function SettingsLocal() {
   const [resendApiKey, setResendApiKey] = useState("");
   const [showResendKey, setShowResendKey] = useState(false);
   const [isResendKeySaved, setIsResendKeySaved] = useState(false);
+
+  // Fetch last backup on mount
+  useEffect(() => {
+    fetchLastBackup();
+  }, [fetchLastBackup]);
 
   useEffect(() => {
     if (settings?.googleMapsApiKey) {
@@ -55,14 +59,7 @@ export default function SettingsLocal() {
       setResendApiKey(settings.resendApiKey);
       setIsResendKeySaved(true);
     }
-    if (settings?.googleClientId) {
-      setGoogleClientId(settings.googleClientId);
-    }
   }, [settings]);
-
-  const handleSaveGoogleClientId = async () => {
-    await updateSettings({ googleClientId: googleClientId.trim() || undefined });
-  };
 
   const handleSaveGoogleKey = async () => {
     await updateSettings({ googleMapsApiKey: googleApiKey.trim() || undefined });
@@ -116,6 +113,10 @@ export default function SettingsLocal() {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
     <Layout>
       <div className="space-y-6 animate-fade-in max-w-2xl">
@@ -123,8 +124,30 @@ export default function SettingsLocal() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground">
-            Configure your KeyKeep Pro preferences.
+            Configure your KeyKeep preferences.
           </p>
+        </div>
+
+        {/* Account */}
+        <div className="card-elevated">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <SettingsIcon className="w-5 h-5" />
+              Account
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Signed in as</p>
+                <p className="text-sm text-muted-foreground">{user?.email}</p>
+              </div>
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
+              </Button>
+            </div>
+          </div>
         </div>
 
         {/* Appearance */}
@@ -355,134 +378,127 @@ export default function SettingsLocal() {
           </div>
         </div>
 
-        {/* Google Drive Sync */}
+        {/* Cloud Backup */}
         <div className="card-elevated">
           <div className="p-6 border-b border-border">
             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Cloud className="w-5 h-5" />
-              Google Drive Sync
+              Cloud Backup
             </h2>
           </div>
           <div className="p-6 space-y-4">
-            {/* Google Client ID */}
-            <div className="space-y-2">
-              <Label htmlFor="google-client-id">Google Cloud Client ID</Label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    id="google-client-id"
-                    type={showClientId ? "text" : "password"}
-                    value={googleClientId}
-                    onChange={(e) => setGoogleClientId(e.target.value)}
-                    placeholder="xxxx.apps.googleusercontent.com"
-                    className="pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowClientId(!showClientId)}
-                  >
-                    {showClientId ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </div>
-                <Button onClick={handleSaveGoogleClientId} disabled={!googleClientId.trim()}>
-                  Save
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Required for Google Drive sync. Create OAuth credentials at{" "}
-                <a
-                  href="https://console.cloud.google.com/apis/credentials"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Google Cloud Console
-                </a>
-              </p>
-            </div>
-
             {/* Connection Status */}
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
               <div>
                 <p className="font-medium text-foreground flex items-center gap-2">
-                  {isDriveConnected ? (
-                    <>
-                      <Cloud className="w-4 h-4 text-green-500" />
-                      Connected to Google Drive
-                    </>
-                  ) : (
-                    <>
-                      <CloudOff className="w-4 h-4" />
-                      Not Connected
-                    </>
-                  )}
+                  <Cloud className="w-4 h-4 text-green-500" />
+                  Cloud Connected
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {isDriveConnected ? "Sync your data to the cloud" : "Connect to enable cloud backup"}
+                  Backup your data to the cloud for safe keeping
                 </p>
               </div>
-              {isDriveConnected ? (
-                <Button variant="outline" onClick={disconnectDrive}>
-                  Disconnect
-                </Button>
-              ) : (
-                <Button 
-                  onClick={() => connectDrive(googleClientId)} 
-                  disabled={isDriveLoading || !googleClientId.trim()}
-                >
-                  {isDriveLoading ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Cloud className="w-4 h-4 mr-2" />
-                  )}
-                  Connect
-                </Button>
-              )}
             </div>
 
-            {isDriveConnected && (
-              <>
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium text-foreground">Backup to Drive</p>
-                    <p className="text-sm text-muted-foreground">
-                      Save all your data to Google Drive
-                    </p>
-                  </div>
-                  <Button variant="outline" onClick={backupToDrive} disabled={isDriveLoading}>
-                    {isDriveLoading ? (
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Upload className="w-4 h-4 mr-2" />
-                    )}
-                    Backup
-                  </Button>
-                </div>
+            {/* Last Backup Info */}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Last Cloud Backup</p>
+                <p className="text-sm text-muted-foreground">
+                  {lastBackup 
+                    ? `${format(parseISO(lastBackup.created_at), "PPP 'at' p")} — ${lastBackup.clients_count} clients, ${lastBackup.reminders_count} reminders`
+                    : "No cloud backups yet"}
+                </p>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium text-foreground">Restore from Drive</p>
-                    <p className="text-sm text-muted-foreground">
-                      Restore data from your latest backup
-                    </p>
-                  </div>
-                  <Button variant="outline" onClick={restoreFromDrive} disabled={isDriveLoading}>
-                    {isDriveLoading ? (
+            {/* Backup Button */}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Backup to Cloud</p>
+                <p className="text-sm text-muted-foreground">
+                  Save all your local data to the cloud
+                </p>
+              </div>
+              <Button variant="outline" onClick={backupToCloud} disabled={isCloudLoading}>
+                {isCloudLoading ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4 mr-2" />
+                )}
+                Backup
+              </Button>
+            </div>
+
+            {/* Restore Button */}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Restore from Cloud</p>
+                <p className="text-sm text-muted-foreground">
+                  Replace local data with your latest cloud backup
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" disabled={isCloudLoading || !lastBackup}>
+                    {isCloudLoading ? (
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                     ) : (
                       <Download className="w-4 h-4 mr-2" />
                     )}
                     Restore
                   </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Restore from Cloud?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will replace all your current local data with the latest cloud backup. 
+                      Any changes made since the last backup will be lost.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={restoreFromCloud}>
+                      Yes, restore data
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+
+            {/* Delete Cloud Backups */}
+            {lastBackup && (
+              <div className="flex items-center justify-between p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+                <div>
+                  <p className="font-medium text-destructive">Delete Cloud Backups</p>
+                  <p className="text-sm text-muted-foreground">
+                    Remove all your backups from the cloud
+                  </p>
                 </div>
-              </>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isCloudLoading}>
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete all cloud backups?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete all your cloud backups. Your local data will not be affected.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteCloudBackups}>
+                        Yes, delete backups
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </div>
         </div>
@@ -498,11 +514,11 @@ export default function SettingsLocal() {
           <div className="p-6 space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="font-medium text-foreground">Last Backup</p>
+                <p className="font-medium text-foreground">Last Local Backup</p>
                 <p className="text-sm text-muted-foreground">
                   {settings?.lastBackupDate 
                     ? format(parseISO(settings.lastBackupDate), "PPP 'at' p")
-                    : "Never backed up"}
+                    : "Never backed up locally"}
                 </p>
               </div>
             </div>
@@ -582,13 +598,13 @@ export default function SettingsLocal() {
                 <SettingsIcon className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="font-semibold text-foreground">KeyKeep Pro</h2>
-                <p className="text-sm text-muted-foreground">Version 2.0.0 — Local-First PWA</p>
+                <h2 className="font-semibold text-foreground">KeyKeep</h2>
+                <p className="text-sm text-muted-foreground">Version 2.1.0 — Offline-First with Cloud Backup</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
               A commercial-grade client anniversary tracker for real estate agents. 
-              All data is stored locally on your device — no internet required.
+              Your data is stored locally and works offline — cloud backup keeps it safe.
             </p>
           </div>
         </div>
