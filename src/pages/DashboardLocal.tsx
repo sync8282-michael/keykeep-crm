@@ -63,13 +63,13 @@ export default function DashboardLocal() {
             title="Birthdays This Month"
             value={stats.birthdaysThisMonth}
             icon={Cake}
-            variant="default"
+            variant="success"
           />
           <StatsCard
             title="Reminders This Month"
             value={stats.remindersThisMonth}
             icon={Bell}
-            variant="default"
+            variant="primary"
           />
         </div>
 
