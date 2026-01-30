@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, Settings } from "lucide-react";
+import { Home, Users, Calendar, Settings, Bell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import nameLogo from "@/assets/name-logo.svg";
 import shieldLogo from "@/assets/shield-logo.svg";
@@ -19,6 +19,7 @@ const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Calendar", url: "/calendar", icon: Calendar },
+  { title: "Notifications", url: "/notifications", icon: Bell },
 ];
 
 const secondaryNavItems = [
