@@ -55,7 +55,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           />
         </div>
 
-        {/* Name Logo with drawing animation */}
+        {/* Name Logo SVG with drawing animation */}
         <div
           className={`transition-all duration-500 ${
             showDrawing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -128,21 +128,9 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
             
             {/* p */}
             <path
-              d="M408.026 18.89C424.151 17.235 435.556 26.745 437.301 42.625C439.896 66.27 416.176 83.79 396.071 66.46L396.056 72.675C395.936 78.56 396.041 104.4 396.071 110.3C391.681 110.3 387.021 110.315 382.736 110.3V19.8L395.641 19.785L395.681 26.625C399.931 21.73 401.896 20.77 408.026 18.89Z"
+              d="M408.025 18.8897C424.15 17.2347 435.556 26.7453 437.301 42.625C439.895 66.2696 416.176 83.7892 396.071 66.46L396.056 72.6748C396.008 75.036 395.996 80.6091 396.001 86.8174L411.668 86.7998L411.681 91.6065L406.364 91.5518L406.393 96.0156L400.471 95.9756L400.479 100.455L406.398 100.434L406.364 104.7L411.646 104.665L411.668 110.3H396.071C391.681 110.3 387.02 110.315 382.735 110.3V19.7998L395.641 19.7842L395.681 26.625C399.93 21.7303 401.896 20.7695 408.025 18.8897ZM408.591 30.4346C389.106 34.6996 393.291 62.2294 410.806 61.6748C430.031 58.6248 427.726 30.6546 408.591 30.4346Z"
               className={`splash-path ${phase === "filling" || phase === "zooming" ? "filled" : ""}`}
-              style={{ strokeDasharray: 400, strokeDashoffset: 400, animationDelay: "0.6s" }}
-            />
-            <path
-              d="M408.591 30.435C427.726 30.655 430.031 58.625 410.806 61.675C393.291 62.23 389.106 34.7 408.591 30.435Z"
-              className={`splash-path-inner ${phase === "filling" || phase === "zooming" ? "filled" : ""}`}
-              style={{ strokeDasharray: 200, strokeDashoffset: 200, animationDelay: "0.65s" }}
-            />
-            
-            {/* TM symbol */}
-            <path
-              d="M395.681 86.8188L411.668 86.8L411.681 91.6062L406.364 91.5521L406.393 96.0155L400.471 95.9756L400.479 100.455L406.398 100.434L406.364 104.7L411.646 104.665L411.668 110.3C406.385 110.3 401.218 110.3 395.681 110.3V86.8188Z"
-              className={`splash-path ${phase === "filling" || phase === "zooming" ? "filled" : ""}`}
-              style={{ strokeDasharray: 150, strokeDashoffset: 150, animationDelay: "0.7s" }}
+              style={{ strokeDasharray: 500, strokeDashoffset: 500, animationDelay: "0.6s" }}
             />
           </svg>
         </div>
@@ -206,7 +194,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
         }
         
         .splash-path.filled {
-          fill: #1D2334;
+          fill: hsl(var(--foreground));
           stroke: transparent;
           transition: fill 0.5s ease-out, stroke 0.3s ease-out;
         }

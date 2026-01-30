@@ -1,0 +1,318 @@
+import { useState, useRef, useEffect } from "react";
+import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor } from "lucide-react";
+import { Layout } from "@/components/layout/Layout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useSettings } from "@/hooks/useSettings";
+import { useBackup } from "@/hooks/useBackup";
+import { format, parseISO } from "date-fns";
+
+export default function SettingsLocal() {
+  const { settings, updateSettings } = useSettings();
+  const { exportData, importData, clearAllData } = useBackup();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [googleApiKey, setGoogleApiKey] = useState("");
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [isApiKeySaved, setIsApiKeySaved] = useState(false);
+
+  useEffect(() => {
+    if (settings?.googleMapsApiKey) {
+      setGoogleApiKey(settings.googleMapsApiKey);
+      setIsApiKeySaved(true);
+    }
+  }, [settings]);
+
+  const handleSaveApiKey = async () => {
+    await updateSettings({ googleMapsApiKey: googleApiKey.trim() || undefined });
+    setIsApiKeySaved(true);
+  };
+
+  const handleRemoveApiKey = async () => {
+    await updateSettings({ googleMapsApiKey: undefined });
+    setGoogleApiKey("");
+    setIsApiKeySaved(false);
+  };
+
+  const handleThemeChange = async (value: 'light' | 'dark' | 'system') => {
+    await updateSettings({ theme: value });
+    
+    // Apply theme immediately
+    if (value === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (value === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // System preference
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      await importData(file);
+      e.target.value = "";
+    }
+  };
+
+  return (
+    <Layout>
+      <div className="space-y-6 animate-fade-in max-w-2xl">
+        {/* Page Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground">
+            Configure your KeyKeep Pro preferences.
+          </p>
+        </div>
+
+        {/* Appearance */}
+        <div className="card-elevated">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Sun className="w-5 h-5" />
+              Appearance
+            </h2>
+          </div>
+          <div className="p-6">
+            <div className="space-y-2">
+              <Label htmlFor="theme">Theme</Label>
+              <Select
+                value={settings?.theme || "system"}
+                onValueChange={(v) => handleThemeChange(v as 'light' | 'dark' | 'system')}
+              >
+                <SelectTrigger className="w-full max-w-[200px]">
+                  <SelectValue placeholder="Select theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">
+                    <div className="flex items-center gap-2">
+                      <Sun className="w-4 h-4" /> Light
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="dark">
+                    <div className="flex items-center gap-2">
+                      <Moon className="w-4 h-4" /> Dark
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="system">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="w-4 h-4" /> System
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* API Keys */}
+        <div className="card-elevated">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Key className="w-5 h-5" />
+              API Keys
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="google-api-key">Google Maps API Key</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="google-api-key"
+                    type={showApiKey ? "text" : "password"}
+                    value={googleApiKey}
+                    onChange={(e) => {
+                      setGoogleApiKey(e.target.value);
+                      setIsApiKeySaved(false);
+                    }}
+                    placeholder="AIzaSy..."
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowApiKey(!showApiKey)}
+                  >
+                    {showApiKey ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+                <Button onClick={handleSaveApiKey} disabled={isApiKeySaved || !googleApiKey.trim()}>
+                  {isApiKeySaved ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Saved
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Required for fetching Street View images. Get your key from{" "}
+                <a
+                  href="https://console.cloud.google.com/apis/credentials"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Google Cloud Console
+                </a>
+              </p>
+            </div>
+
+            {isApiKeySaved && googleApiKey && (
+              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                <div>
+                  <p className="font-medium text-foreground">Remove API Key</p>
+                  <p className="text-sm text-muted-foreground">
+                    This will disable Street View fetching
+                  </p>
+                </div>
+                <Button variant="outline" onClick={handleRemoveApiKey}>
+                  Remove
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Backup & Sync */}
+        <div className="card-elevated">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Database className="w-5 h-5" />
+              Backup & Sync
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            {settings?.lastBackupDate && (
+              <p className="text-sm text-muted-foreground">
+                Last backup: {format(parseISO(settings.lastBackupDate), "PPP 'at' p")}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Export Data</p>
+                <p className="text-sm text-muted-foreground">
+                  Download all your data as a JSON file
+                </p>
+              </div>
+              <Button variant="outline" onClick={exportData}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">Import Data</p>
+                <p className="text-sm text-muted-foreground">
+                  Restore data from a backup file
+                </p>
+              </div>
+              <Button variant="outline" onClick={handleImportClick}>
+                <Upload className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+              <div>
+                <p className="font-medium text-destructive">Clear All Data</p>
+                <p className="text-sm text-muted-foreground">
+                  This will remove all clients permanently
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Clear Data
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete all
+                      your clients and reset the app to its default state.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={clearAllData}>
+                      Yes, clear all data
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </div>
+
+        {/* About */}
+        <div className="card-elevated">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                <SettingsIcon className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-foreground">KeyKeep Pro</h2>
+                <p className="text-sm text-muted-foreground">Version 2.0.0 — Local-First PWA</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              A commercial-grade client anniversary tracker for real estate agents. 
+              All data is stored locally on your device — no internet required.
+            </p>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
