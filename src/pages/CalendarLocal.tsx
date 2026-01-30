@@ -22,7 +22,7 @@ export default function CalendarLocal() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const clients = useLiveQuery(() => db.clients.toArray()) ?? [];
-  const reminders = useLiveQuery(() => db.reminders.where('isCompleted').equals(0).toArray()) ?? [];
+  const reminders = useLiveQuery(() => db.reminders.filter(r => !r.isCompleted).toArray()) ?? [];
   
   const { markAsSent, snoozeReminder } = useReminderMutations();
 
