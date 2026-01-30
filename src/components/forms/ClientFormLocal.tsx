@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, MapPin, Loader2, Upload, User } from "lucide-react";
+import { Calendar as CalendarIcon, MapPin, Loader2, Upload, User, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +72,60 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
     initialData?.preferredContactMethod || 'email'
   );
   const [fetchingStreetView, setFetchingStreetView] = useState(false);
+  const [fetchingAvatarStreetView, setFetchingAvatarStreetView] = useState(false);
+
+  const handleFetchAvatarStreetView = async () => {
+    if (!address.trim()) {
+      toast({
+        title: "Address Required",
+        description: "Please enter an address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!settings?.googleMapsApiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please add your Google Maps API key in Settings.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFetchingAvatarStreetView(true);
+    
+    try {
+      const encodedAddress = encodeURIComponent(address);
+      const url = `https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${encodedAddress}&key=${settings.googleMapsApiKey}`;
+      
+      const img = new Image();
+      img.onload = () => {
+        setAvatarPath(url);
+        setFetchingAvatarStreetView(false);
+        toast({
+          title: "Street View Loaded",
+          description: "Profile photo set to property Street View.",
+        });
+      };
+      img.onerror = () => {
+        setFetchingAvatarStreetView(false);
+        toast({
+          title: "Could not load image",
+          description: "Street View might not be available for this address.",
+          variant: "destructive",
+        });
+      };
+      img.src = url;
+    } catch (error) {
+      setFetchingAvatarStreetView(false);
+      toast({
+        title: "Error",
+        description: "Failed to fetch Street View image.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -196,20 +250,18 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
         {/* Avatar Upload */}
         <div className="flex flex-col items-center gap-3">
           <Label className="text-sm text-muted-foreground">Profile Photo</Label>
-          <div 
-            className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-border hover:border-primary transition-colors cursor-pointer group"
-            onClick={() => avatarInputRef.current?.click()}
-          >
-            {avatarPath ? (
+          <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-border">
+            {fetchingAvatarStreetView ? (
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+              </div>
+            ) : avatarPath ? (
               <img src={avatarPath} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
                 <User className="w-10 h-10 text-muted-foreground" />
               </div>
             )}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Upload className="w-6 h-6 text-white" />
-            </div>
           </div>
           <input
             ref={avatarInputRef}
@@ -218,7 +270,45 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
             onChange={handleAvatarUpload}
             className="hidden"
           />
-          <span className="text-xs text-muted-foreground">Click to upload</span>
+          {/* Photo Source Options */}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => avatarInputRef.current?.click()}
+              disabled={fetchingAvatarStreetView}
+            >
+              <Upload className="w-4 h-4 mr-1" />
+              Upload
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleFetchAvatarStreetView}
+              disabled={fetchingAvatarStreetView || !settings?.googleMapsApiKey}
+              title={!settings?.googleMapsApiKey ? "Add Google Maps API key in Settings" : "Use Street View as profile photo"}
+            >
+              {fetchingAvatarStreetView ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : (
+                <MapPin className="w-4 h-4 mr-1" />
+              )}
+              Street View
+            </Button>
+          </div>
+          {avatarPath && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setAvatarPath("")}
+              className="text-xs text-muted-foreground hover:text-destructive"
+            >
+              Remove photo
+            </Button>
+          )}
         </div>
 
         {/* Property Image Preview */}
