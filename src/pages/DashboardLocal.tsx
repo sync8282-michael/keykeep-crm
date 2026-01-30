@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { format, parseISO, differenceInYears } from "date-fns";
-import { Users, Calendar, Database, Plus, Home, Mail, MessageCircle } from "lucide-react";
+import { differenceInYears, parseISO } from "date-fns";
+import { Users, Calendar, Plus, Home, Mail, MessageCircle, Cake, Bell } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ export default function DashboardLocal() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatsCard
             title="Total Clients"
             value={stats.totalClients}
@@ -60,9 +60,15 @@ export default function DashboardLocal() {
             variant="warning"
           />
           <StatsCard
-            title="Last Backup"
-            value={stats.lastBackupDate ? format(parseISO(stats.lastBackupDate), "MMM d") : "Never"}
-            icon={Database}
+            title="Birthdays This Month"
+            value={stats.birthdaysThisMonth}
+            icon={Cake}
+            variant="default"
+          />
+          <StatsCard
+            title="Reminders This Month"
+            value={stats.remindersThisMonth}
+            icon={Bell}
             variant="default"
           />
         </div>

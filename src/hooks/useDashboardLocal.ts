@@ -5,6 +5,7 @@ import { parseISO, isSameMonth, isSameDay, getMonth, getDate } from 'date-fns';
 
 export function useDashboardStats() {
   const clients = useLiveQuery(() => db.clients.toArray()) ?? [];
+  const reminders = useLiveQuery(() => db.reminders.filter(r => !r.isCompleted).toArray()) ?? [];
   const settings = useLiveQuery(() => db.settings.get('app'));
 
   const stats = useMemo(() => {
@@ -26,13 +27,28 @@ export function useDashboardStats() {
       return getMonth(moveIn) === currentMonth && getDate(moveIn) === currentDate;
     }).length;
 
+    // Calculate birthdays this month
+    const birthdaysThisMonth = clients.filter((client) => {
+      if (!client.birthday) return false;
+      const birthday = parseISO(client.birthday);
+      return getMonth(birthday) === currentMonth;
+    }).length;
+
+    // Calculate reminders this month
+    const remindersThisMonth = reminders.filter((reminder) => {
+      const reminderDate = parseISO(reminder.reminderDate);
+      return getMonth(reminderDate) === currentMonth;
+    }).length;
+
     return {
       totalClients: clients.length,
       anniversariesThisMonth,
       anniversariesToday,
+      birthdaysThisMonth,
+      remindersThisMonth,
       lastBackupDate: settings?.lastBackupDate || null,
     };
-  }, [clients, settings]);
+  }, [clients, reminders, settings]);
 
   // Recent clients (last 5 added)
   const recentClients = useMemo(() => {
