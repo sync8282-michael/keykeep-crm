@@ -2,7 +2,8 @@ import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { TabletHeader } from "./TabletHeader";
+import { useIsMobile, useIsTablet } from "@/hooks/use-mobile";
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,7 +11,24 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
+  // Tablet layout: horizontal header nav, no sidebar
+  if (isTablet) {
+    return (
+      <div className="min-h-screen flex flex-col w-full bg-background">
+        <TabletHeader />
+        <main className="flex-1 overflow-auto">
+          <div className="container mx-auto px-6 py-6 max-w-4xl">
+            {children}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Mobile layout: bottom nav, no sidebar
+  // Desktop layout: sidebar with trigger
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-background">
