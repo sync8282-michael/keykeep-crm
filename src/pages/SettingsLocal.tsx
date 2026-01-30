@@ -32,25 +32,44 @@ export default function SettingsLocal() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [googleApiKey, setGoogleApiKey] = useState("");
-  const [showApiKey, setShowApiKey] = useState(false);
-  const [isApiKeySaved, setIsApiKeySaved] = useState(false);
+  const [showGoogleKey, setShowGoogleKey] = useState(false);
+  const [isGoogleKeySaved, setIsGoogleKeySaved] = useState(false);
+
+  const [resendApiKey, setResendApiKey] = useState("");
+  const [showResendKey, setShowResendKey] = useState(false);
+  const [isResendKeySaved, setIsResendKeySaved] = useState(false);
 
   useEffect(() => {
     if (settings?.googleMapsApiKey) {
       setGoogleApiKey(settings.googleMapsApiKey);
-      setIsApiKeySaved(true);
+      setIsGoogleKeySaved(true);
+    }
+    if (settings?.resendApiKey) {
+      setResendApiKey(settings.resendApiKey);
+      setIsResendKeySaved(true);
     }
   }, [settings]);
 
-  const handleSaveApiKey = async () => {
+  const handleSaveGoogleKey = async () => {
     await updateSettings({ googleMapsApiKey: googleApiKey.trim() || undefined });
-    setIsApiKeySaved(true);
+    setIsGoogleKeySaved(true);
   };
 
-  const handleRemoveApiKey = async () => {
+  const handleSaveResendKey = async () => {
+    await updateSettings({ resendApiKey: resendApiKey.trim() || undefined });
+    setIsResendKeySaved(true);
+  };
+
+  const handleRemoveGoogleKey = async () => {
     await updateSettings({ googleMapsApiKey: undefined });
     setGoogleApiKey("");
-    setIsApiKeySaved(false);
+    setIsGoogleKeySaved(false);
+  };
+
+  const handleRemoveResendKey = async () => {
+    await updateSettings({ resendApiKey: undefined });
+    setResendApiKey("");
+    setIsResendKeySaved(false);
   };
 
   const handleThemeChange = async (value: 'light' | 'dark' | 'system') => {
@@ -143,17 +162,18 @@ export default function SettingsLocal() {
             </h2>
           </div>
           <div className="p-6 space-y-4">
+            {/* Google Maps API Key */}
             <div className="space-y-2">
               <Label htmlFor="google-api-key">Google Maps API Key</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Input
                     id="google-api-key"
-                    type={showApiKey ? "text" : "password"}
+                    type={showGoogleKey ? "text" : "password"}
                     value={googleApiKey}
                     onChange={(e) => {
                       setGoogleApiKey(e.target.value);
-                      setIsApiKeySaved(false);
+                      setIsGoogleKeySaved(false);
                     }}
                     placeholder="AIzaSy..."
                     className="pr-10"
@@ -163,17 +183,17 @@ export default function SettingsLocal() {
                     variant="ghost"
                     size="icon"
                     className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowApiKey(!showApiKey)}
+                    onClick={() => setShowGoogleKey(!showGoogleKey)}
                   >
-                    {showApiKey ? (
+                    {showGoogleKey ? (
                       <EyeOff className="h-4 w-4 text-muted-foreground" />
                     ) : (
                       <Eye className="h-4 w-4 text-muted-foreground" />
                     )}
                   </Button>
                 </div>
-                <Button onClick={handleSaveApiKey} disabled={isApiKeySaved || !googleApiKey.trim()}>
-                  {isApiKeySaved ? (
+                <Button onClick={handleSaveGoogleKey} disabled={isGoogleKeySaved || !googleApiKey.trim()}>
+                  {isGoogleKeySaved ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
                       Saved
@@ -196,15 +216,83 @@ export default function SettingsLocal() {
               </p>
             </div>
 
-            {isApiKeySaved && googleApiKey && (
+            {isGoogleKeySaved && googleApiKey && (
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div>
-                  <p className="font-medium text-foreground">Remove API Key</p>
+                  <p className="font-medium text-foreground">Remove Google API Key</p>
                   <p className="text-sm text-muted-foreground">
                     This will disable Street View fetching
                   </p>
                 </div>
-                <Button variant="outline" onClick={handleRemoveApiKey}>
+                <Button variant="outline" onClick={handleRemoveGoogleKey}>
+                  Remove
+                </Button>
+              </div>
+            )}
+
+            {/* Resend API Key */}
+            <div className="space-y-2 pt-4 border-t border-border">
+              <Label htmlFor="resend-api-key">Resend API Key</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="resend-api-key"
+                    type={showResendKey ? "text" : "password"}
+                    value={resendApiKey}
+                    onChange={(e) => {
+                      setResendApiKey(e.target.value);
+                      setIsResendKeySaved(false);
+                    }}
+                    placeholder="re_..."
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowResendKey(!showResendKey)}
+                  >
+                    {showResendKey ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+                <Button onClick={handleSaveResendKey} disabled={isResendKeySaved || !resendApiKey.trim()}>
+                  {isResendKeySaved ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Saved
+                    </>
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Required for sending anniversary emails. Get your key from{" "}
+                <a
+                  href="https://resend.com/api-keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Resend Dashboard
+                </a>
+              </p>
+            </div>
+
+            {isResendKeySaved && resendApiKey && (
+              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                <div>
+                  <p className="font-medium text-foreground">Remove Resend API Key</p>
+                  <p className="text-sm text-muted-foreground">
+                    This will disable email sending
+                  </p>
+                </div>
+                <Button variant="outline" onClick={handleRemoveResendKey}>
                   Remove
                 </Button>
               </div>
