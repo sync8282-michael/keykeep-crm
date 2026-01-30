@@ -32,7 +32,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4 pl-3">
-        <img src={nameLogo} alt="KeyKeep" className="h-8 w-auto" />
+        <img src={nameLogo} alt="KeyKeep" className="h-8 w-auto text-foreground dark:invert" />
       </SidebarHeader>
 
       <SidebarContent className="px-2">
