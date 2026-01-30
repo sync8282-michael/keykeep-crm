@@ -1,31 +1,51 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SplashScreen } from "@/components/SplashScreen";
-import Index from "./pages/Index";
-import Clients from "./pages/Clients";
-import ClientDetail from "./pages/ClientDetail";
-import CalendarPage from "./pages/CalendarPage";
-import SearchPage from "./pages/SearchPage";
-import Notifications from "./pages/Notifications";
-import Settings from "./pages/Settings";
+import { initializeSettings, db } from "@/db/database";
+import DashboardLocal from "./pages/DashboardLocal";
+import ClientsLocal from "./pages/ClientsLocal";
+import ClientDetailLocal from "./pages/ClientDetailLocal";
+import CalendarLocal from "./pages/CalendarLocal";
+import SettingsLocal from "./pages/SettingsLocal";
 import NotFound from "./pages/NotFound";
-import AuthPage from "./pages/AuthPage";
-import { AuthProvider } from "@/auth/AuthProvider";
-import { RequireAuth } from "@/auth/RequireAuth";
-import { RedirectIfAuthed } from "@/auth/RedirectIfAuthed";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [dbReady, setDbReady] = useState(false);
+
+  // Initialize database and settings
+  useEffect(() => {
+    const init = async () => {
+      await initializeSettings();
+      
+      // Apply saved theme
+      const settings = await db.settings.get('app');
+      if (settings?.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (settings?.theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+      
+      setDbReady(true);
+    };
+    init();
+  }, []);
 
   const handleSplashComplete = useCallback(() => {
     setShowSplash(false);
   }, []);
+
+  if (!dbReady) {
+    return null; // Wait for database initialization
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -39,24 +59,15 @@ const App = () => {
           }`}
         >
           <BrowserRouter>
-            <AuthProvider>
-              <Routes>
-                <Route element={<RedirectIfAuthed />}>
-                  <Route path="/auth" element={<AuthPage />} />
-                </Route>
-
-                <Route element={<RequireAuth />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/clients" element={<Clients />} />
-                  <Route path="/clients/:id" element={<ClientDetail />} />
-                  <Route path="/calendar" element={<CalendarPage />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-              </Routes>
-            </AuthProvider>
+            <Routes>
+              <Route path="/" element={<DashboardLocal />} />
+              <Route path="/clients" element={<ClientsLocal />} />
+              <Route path="/clients/new" element={<ClientsLocal />} />
+              <Route path="/clients/:id" element={<ClientDetailLocal />} />
+              <Route path="/calendar" element={<CalendarLocal />} />
+              <Route path="/settings" element={<SettingsLocal />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </BrowserRouter>
         </div>
       </TooltipProvider>

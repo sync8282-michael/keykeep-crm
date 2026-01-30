@@ -1,7 +1,5 @@
-import { Home, Users, Calendar, Search, Bell, Settings, LogOut } from "lucide-react";
+import { Home, Users, Calendar, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useAuth } from "@/auth/AuthProvider";
-import { useNavigate } from "react-router-dom";
 import nameLogo from "@/assets/name-logo.svg";
 import shieldLogo from "@/assets/shield-logo.svg";
 import {
@@ -13,18 +11,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 const mainNavItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Calendar", url: "/calendar", icon: Calendar },
-  { title: "Search", url: "/search", icon: Search },
-  { title: "Notifications", url: "/notifications", icon: Bell },
 ];
 
 const secondaryNavItems = [
@@ -34,13 +28,6 @@ const secondaryNavItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate("/auth", { replace: true });
-  };
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -99,20 +86,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        {user && (
-          <Button
-            variant="ghost"
-            size={collapsed ? "icon" : "default"}
-            className="w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-5 w-5 flex-shrink-0" />
-            {!collapsed && <span>Log out</span>}
-          </Button>
-        )}
-      </SidebarFooter>
     </Sidebar>
   );
 }
