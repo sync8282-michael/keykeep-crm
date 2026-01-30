@@ -19,7 +19,6 @@ const propertyTypeLabels = {
   house: "House",
   farm: "Farm",
   apartment: "Apartment",
-  plot: "Plot",
 };
 
 export default function ClientDetail() {
@@ -163,8 +162,7 @@ export default function ClientDetail() {
                       "w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0",
                       property.type === "house" && "bg-primary/10 text-primary",
                       property.type === "farm" && "bg-success/10 text-success",
-                      property.type === "apartment" && "bg-accent/10 text-accent",
-                      property.type === "plot" && "bg-muted text-muted-foreground"
+                      property.type === "apartment" && "bg-accent/10 text-accent"
                     )}>
                       <Home className="w-6 h-6" />
                     </div>
@@ -176,8 +174,7 @@ export default function ClientDetail() {
                             "badge-property mb-1",
                             property.type === "house" && "badge-house",
                             property.type === "farm" && "badge-farm",
-                            property.type === "apartment" && "badge-apartment",
-                            property.type === "plot" && "bg-muted text-muted-foreground"
+                            property.type === "apartment" && "badge-apartment"
                           )}>
                             {propertyTypeLabels[property.type]}
                           </span>

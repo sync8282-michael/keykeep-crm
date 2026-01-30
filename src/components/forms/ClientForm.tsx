@@ -17,6 +17,7 @@ interface ClientFormProps {
   onSubmit: (data: ClientFormData) => void;
   onCancel: () => void;
   initialData?: Partial<ClientFormData>;
+  isLoading?: boolean;
 }
 
 export interface ClientFormData {
@@ -27,7 +28,7 @@ export interface ClientFormData {
   notes?: string;
 }
 
-export function ClientForm({ onSubmit, onCancel, initialData }: ClientFormProps) {
+export function ClientForm({ onSubmit, onCancel, initialData, isLoading }: ClientFormProps) {
   const [name, setName] = useState(initialData?.name || "");
   const [email, setEmail] = useState(initialData?.email || "");
   const [phone, setPhone] = useState(initialData?.phone || "");
@@ -130,11 +131,11 @@ export function ClientForm({ onSubmit, onCancel, initialData }: ClientFormProps)
       </div>
 
       <div className="flex justify-end gap-3 pt-4 border-t border-border">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
           Cancel
         </Button>
-        <Button type="submit">
-          {initialData ? "Update Client" : "Add Client"}
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? "Saving..." : initialData ? "Update Client" : "Add Client"}
         </Button>
       </div>
     </form>

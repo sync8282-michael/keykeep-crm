@@ -1,6 +1,6 @@
-export type PropertyType = "house" | "farm" | "apartment" | "plot";
+export type PropertyType = "house" | "farm" | "apartment";
 
-export type ReminderType = "anniversary" | "birthday" | "custom";
+export type ReminderType = "anniversary" | "birthday" | "followup" | "custom";
 
 export type ReminderChannel = "email" | "sms" | "both";
 
@@ -19,7 +19,8 @@ export interface Property {
   clientId: string;
   type: PropertyType;
   address: string;
-  purchaseDate: string;
+  purchaseDate?: string;
+  purchasePrice?: number;
   frontImage?: string;
   notes?: string;
   createdAt: string;

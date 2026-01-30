@@ -13,7 +13,6 @@ const propertyTypeLabels = {
   house: "House",
   farm: "Farm",
   apartment: "Apartment",
-  plot: "Plot",
 };
 
 export function ClientCard({ client, properties }: ClientCardProps) {
@@ -48,20 +47,19 @@ export function ClientCard({ client, properties }: ClientCardProps) {
 
           {properties.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-3">
-              {properties.map((property) => (
-                <span
-                  key={property.id}
-                  className={cn(
-                    "badge-property",
-                    property.type === "house" && "badge-house",
-                    property.type === "farm" && "badge-farm",
-                    property.type === "apartment" && "badge-apartment",
-                    property.type === "plot" && "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {propertyTypeLabels[property.type]}
-                </span>
-              ))}
+                {properties.map((property) => (
+                  <span
+                    key={property.id}
+                    className={cn(
+                      "badge-property",
+                      property.type === "house" && "badge-house",
+                      property.type === "farm" && "badge-farm",
+                      property.type === "apartment" && "badge-apartment"
+                    )}
+                  >
+                    {propertyTypeLabels[property.type]}
+                  </span>
+                ))}
             </div>
           )}
 
