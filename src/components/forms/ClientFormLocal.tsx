@@ -360,22 +360,7 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
-              className="flex-1"
             />
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={handleFetchStreetView}
-              disabled={fetchingStreetView || !settings?.googleMapsApiKey}
-              title={!settings?.googleMapsApiKey ? "Add Google Maps API key in Settings" : "Fetch Street View"}
-            >
-              {fetchingStreetView ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <MapPin className="h-4 w-4" />
-              )}
-              <span className="ml-2 hidden sm:inline">Fetch Street View</span>
-            </Button>
           </div>
         </div>
 
