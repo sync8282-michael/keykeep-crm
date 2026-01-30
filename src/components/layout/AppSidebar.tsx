@@ -1,7 +1,6 @@
 import { Home, Users, Calendar, Settings, Bell } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import nameLogo from "@/assets/name-logo.svg";
-import shieldLogo from "@/assets/shield-logo.svg";
 import {
   Sidebar,
   SidebarContent,
@@ -32,13 +31,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-      <SidebarHeader className="p-4">
-        <div className="flex items-center gap-3">
-          <img src={shieldLogo} alt="KeyKeep" className="h-8 w-8 flex-shrink-0" />
-          {!collapsed && (
-            <img src={nameLogo} alt="KeyKeep" className="h-6 w-auto" />
-          )}
-        </div>
+      <SidebarHeader className="p-4 pl-3">
+        <img src={nameLogo} alt="KeyKeep" className="h-8 w-auto" />
       </SidebarHeader>
 
       <SidebarContent className="px-2">
