@@ -36,7 +36,7 @@ export default function DashboardLocal() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
             <p className="text-muted-foreground">
-              Welcome to KeyKeep Pro — your client anniversary tracker.
+              Welcome to KeyKeep — your client anniversary tracker.
             </p>
           </div>
           <Button onClick={() => navigate("/clients/new")}>
