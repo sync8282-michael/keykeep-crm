@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Plus, Search as SearchIcon } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
@@ -6,42 +6,42 @@ import { ClientCard } from "@/components/clients/ClientCard";
 import { ClientForm, ClientFormData } from "@/components/forms/ClientForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Client, Property } from "@/types";
-import { getClients, getProperties, saveClients, generateId } from "@/lib/store";
+import { ClientsSkeleton } from "@/components/skeletons/PageSkeletons";
+import { useClients, useCreateClient } from "@/hooks/useClients";
+import { useProperties } from "@/hooks/useProperties";
 
 export default function Clients() {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [properties, setProperties] = useState<Property[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    setClients(getClients());
-    setProperties(getProperties());
-  }, []);
+  const { data: clients = [], isLoading: clientsLoading } = useClients();
+  const { data: properties = [], isLoading: propertiesLoading } = useProperties();
+  const createClient = useCreateClient();
 
   const filteredClients = clients.filter((client) =>
     client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.phone.includes(searchQuery)
+    (client.email && client.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (client.phone && client.phone.includes(searchQuery))
   );
 
-  const handleCreateClient = (data: ClientFormData) => {
-    const newClient: Client = {
-      id: generateId(),
+  const handleCreateClient = async (data: ClientFormData) => {
+    await createClient.mutateAsync({
       name: data.name,
-      email: data.email,
-      phone: data.phone,
-      birthday: data.birthday ? format(data.birthday, "yyyy-MM-dd") : undefined,
-      notes: data.notes,
-      createdAt: format(new Date(), "yyyy-MM-dd"),
-    };
-
-    const updatedClients = [...clients, newClient];
-    setClients(updatedClients);
-    saveClients(updatedClients);
+      email: data.email || null,
+      phone: data.phone || null,
+      birthday: data.birthday ? format(data.birthday, "yyyy-MM-dd") : null,
+      notes: data.notes || null,
+    });
     setShowForm(false);
   };
+
+  if (clientsLoading || propertiesLoading) {
+    return (
+      <Layout>
+        <ClientsSkeleton />
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -65,6 +65,7 @@ export default function Clients() {
           <ClientForm
             onSubmit={handleCreateClient}
             onCancel={() => setShowForm(false)}
+            isLoading={createClient.isPending}
           />
         )}
 
@@ -87,15 +88,36 @@ export default function Clients() {
                 {filteredClients.map((client) => (
                   <ClientCard
                     key={client.id}
-                    client={client}
-                    properties={properties.filter((p) => p.clientId === client.id)}
+                    client={{
+                      id: client.id,
+                      name: client.name,
+                      email: client.email || "",
+                      phone: client.phone || "",
+                      birthday: client.birthday || undefined,
+                      notes: client.notes || undefined,
+                      createdAt: client.created_at,
+                    }}
+                    properties={properties
+                      .filter((p) => p.client_id === client.id)
+                      .map((p) => ({
+                        id: p.id,
+                        clientId: p.client_id,
+                        type: p.type,
+                        address: p.address,
+                        purchaseDate: p.purchase_date || undefined,
+                        purchasePrice: p.purchase_price || undefined,
+                        notes: p.notes || undefined,
+                        createdAt: p.created_at,
+                      }))}
                   />
                 ))}
               </div>
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
-                  {searchQuery ? "No clients match your search." : "No clients yet. Add your first client to get started."}
+                  {searchQuery
+                    ? "No clients match your search."
+                    : "No clients yet. Add your first client to get started."}
                 </p>
               </div>
             )}
