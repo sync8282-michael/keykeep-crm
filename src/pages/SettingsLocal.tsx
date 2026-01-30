@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor } from "lucide-react";
+import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor, Cloud, CloudOff, Bell, BellOff, RefreshCw } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +24,19 @@ import {
 } from "@/components/ui/select";
 import { useSettings } from "@/hooks/useSettings";
 import { useBackup } from "@/hooks/useBackup";
+import { useGoogleDrive } from "@/hooks/useGoogleDrive";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { format, parseISO } from "date-fns";
 
 export default function SettingsLocal() {
   const { settings, updateSettings } = useSettings();
   const { exportData, importData, clearAllData } = useBackup();
+  const { isLoading: isDriveLoading, isConnected: isDriveConnected, connect: connectDrive, disconnect: disconnectDrive, backup: backupToDrive, restore: restoreFromDrive } = useGoogleDrive();
+  const { isSupported: notificationsSupported, isEnabled: notificationsEnabled, requestPermission } = usePushNotifications();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [googleClientId, setGoogleClientId] = useState("");
+  const [showClientId, setShowClientId] = useState(false);
 
   const [googleApiKey, setGoogleApiKey] = useState("");
   const [showGoogleKey, setShowGoogleKey] = useState(false);
@@ -48,7 +55,14 @@ export default function SettingsLocal() {
       setResendApiKey(settings.resendApiKey);
       setIsResendKeySaved(true);
     }
+    if (settings?.googleClientId) {
+      setGoogleClientId(settings.googleClientId);
+    }
   }, [settings]);
+
+  const handleSaveGoogleClientId = async () => {
+    await updateSettings({ googleClientId: googleClientId.trim() || undefined });
+  };
 
   const handleSaveGoogleKey = async () => {
     await updateSettings({ googleMapsApiKey: googleApiKey.trim() || undefined });
@@ -300,12 +314,185 @@ export default function SettingsLocal() {
           </div>
         </div>
 
-        {/* Backup & Sync */}
+        {/* Push Notifications */}
+        <div className="card-elevated">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Push Notifications
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground">
+                  {notificationsEnabled ? "Notifications Enabled" : "Enable Notifications"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {notificationsSupported 
+                    ? "Get reminded about upcoming anniversaries" 
+                    : "Not supported in this browser"}
+                </p>
+              </div>
+              <Button 
+                variant={notificationsEnabled ? "outline" : "default"}
+                onClick={requestPermission}
+                disabled={!notificationsSupported || notificationsEnabled}
+              >
+                {notificationsEnabled ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Enabled
+                  </>
+                ) : (
+                  <>
+                    <Bell className="w-4 h-4 mr-2" />
+                    Enable
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Google Drive Sync */}
+        <div className="card-elevated">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Cloud className="w-5 h-5" />
+              Google Drive Sync
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            {/* Google Client ID */}
+            <div className="space-y-2">
+              <Label htmlFor="google-client-id">Google Cloud Client ID</Label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Input
+                    id="google-client-id"
+                    type={showClientId ? "text" : "password"}
+                    value={googleClientId}
+                    onChange={(e) => setGoogleClientId(e.target.value)}
+                    placeholder="xxxx.apps.googleusercontent.com"
+                    className="pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={() => setShowClientId(!showClientId)}
+                  >
+                    {showClientId ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+                <Button onClick={handleSaveGoogleClientId} disabled={!googleClientId.trim()}>
+                  Save
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Required for Google Drive sync. Create OAuth credentials at{" "}
+                <a
+                  href="https://console.cloud.google.com/apis/credentials"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Google Cloud Console
+                </a>
+              </p>
+            </div>
+
+            {/* Connection Status */}
+            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div>
+                <p className="font-medium text-foreground flex items-center gap-2">
+                  {isDriveConnected ? (
+                    <>
+                      <Cloud className="w-4 h-4 text-green-500" />
+                      Connected to Google Drive
+                    </>
+                  ) : (
+                    <>
+                      <CloudOff className="w-4 h-4" />
+                      Not Connected
+                    </>
+                  )}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {isDriveConnected ? "Sync your data to the cloud" : "Connect to enable cloud backup"}
+                </p>
+              </div>
+              {isDriveConnected ? (
+                <Button variant="outline" onClick={disconnectDrive}>
+                  Disconnect
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => connectDrive(googleClientId)} 
+                  disabled={isDriveLoading || !googleClientId.trim()}
+                >
+                  {isDriveLoading ? (
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Cloud className="w-4 h-4 mr-2" />
+                  )}
+                  Connect
+                </Button>
+              )}
+            </div>
+
+            {isDriveConnected && (
+              <>
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                  <div>
+                    <p className="font-medium text-foreground">Backup to Drive</p>
+                    <p className="text-sm text-muted-foreground">
+                      Save all your data to Google Drive
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={backupToDrive} disabled={isDriveLoading}>
+                    {isDriveLoading ? (
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-2" />
+                    )}
+                    Backup
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                  <div>
+                    <p className="font-medium text-foreground">Restore from Drive</p>
+                    <p className="text-sm text-muted-foreground">
+                      Restore data from your latest backup
+                    </p>
+                  </div>
+                  <Button variant="outline" onClick={restoreFromDrive} disabled={isDriveLoading}>
+                    {isDriveLoading ? (
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    Restore
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Local Backup */}
         <div className="card-elevated">
           <div className="p-6 border-b border-border">
             <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <Database className="w-5 h-5" />
-              Backup & Sync
+              Local Backup
             </h2>
           </div>
           <div className="p-6 space-y-4">
