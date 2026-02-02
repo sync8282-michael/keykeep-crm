@@ -119,30 +119,30 @@ export default function SettingsLocal() {
 
   return (
     <Layout>
-      <div className="space-y-6 animate-fade-in max-w-2xl">
+      <div className="space-y-4 sm:space-y-6 animate-fade-in max-w-2xl">
         {/* Page Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Configure your KeyKeep preferences.
           </p>
         </div>
 
         {/* Account */}
         <div className="card-elevated">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <SettingsIcon className="w-5 h-5" />
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <SettingsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
               Account
             </h2>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-              <div>
-                <p className="font-medium text-foreground">Signed in as</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+          <div className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
+              <div className="min-w-0">
+                <p className="font-medium text-foreground text-sm sm:text-base">Signed in as</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{user?.email}</p>
               </div>
-              <Button variant="outline" onClick={handleSignOut}>
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full sm:w-auto">
                 <LogOut className="w-4 h-4 mr-2" />
                 Sign Out
               </Button>
@@ -152,20 +152,20 @@ export default function SettingsLocal() {
 
         {/* Appearance */}
         <div className="card-elevated">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Sun className="w-5 h-5" />
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <Sun className="w-4 h-4 sm:w-5 sm:h-5" />
               Appearance
             </h2>
           </div>
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <div className="space-y-2">
-              <Label htmlFor="theme">Theme</Label>
+              <Label htmlFor="theme" className="text-sm">Theme</Label>
               <Select
                 value={settings?.theme || "system"}
                 onValueChange={(v) => handleThemeChange(v as 'light' | 'dark' | 'system')}
               >
-                <SelectTrigger className="w-full max-w-[200px]">
+                <SelectTrigger className="w-full sm:max-w-[200px]">
                   <SelectValue placeholder="Select theme" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,17 +192,17 @@ export default function SettingsLocal() {
 
         {/* API Keys */}
         <div className="card-elevated">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Key className="w-5 h-5" />
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <Key className="w-4 h-4 sm:w-5 sm:h-5" />
               API Keys
             </h2>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4">
             {/* Google Maps API Key */}
             <div className="space-y-2">
-              <Label htmlFor="google-api-key">Google Maps API Key</Label>
-              <div className="flex gap-2">
+              <Label htmlFor="google-api-key" className="text-sm">Google Maps API Key</Label>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
                   <Input
                     id="google-api-key"
@@ -213,7 +213,7 @@ export default function SettingsLocal() {
                       setIsGoogleKeySaved(false);
                     }}
                     placeholder="AIzaSy..."
-                    className="pr-10"
+                    className="pr-10 text-sm"
                   />
                   <Button
                     type="button"
@@ -229,7 +229,12 @@ export default function SettingsLocal() {
                     )}
                   </Button>
                 </div>
-                <Button onClick={handleSaveGoogleKey} disabled={isGoogleKeySaved || !googleApiKey.trim()}>
+                <Button 
+                  onClick={handleSaveGoogleKey} 
+                  disabled={isGoogleKeySaved || !googleApiKey.trim()}
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
                   {isGoogleKeySaved ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -240,28 +245,28 @@ export default function SettingsLocal() {
                   )}
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Required for fetching Street View images. Get your key from{" "}
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Required for Street View images.{" "}
                 <a
                   href="https://console.cloud.google.com/apis/credentials"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Google Cloud Console
+                  Get key
                 </a>
               </p>
             </div>
 
             {isGoogleKeySaved && googleApiKey && (
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
                 <div>
-                  <p className="font-medium text-foreground">Remove Google API Key</p>
-                  <p className="text-sm text-muted-foreground">
-                    This will disable Street View fetching
+                  <p className="font-medium text-foreground text-sm">Remove Google API Key</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Disables Street View fetching
                   </p>
                 </div>
-                <Button variant="outline" onClick={handleRemoveGoogleKey}>
+                <Button variant="outline" size="sm" onClick={handleRemoveGoogleKey} className="w-full sm:w-auto">
                   Remove
                 </Button>
               </div>
@@ -269,8 +274,8 @@ export default function SettingsLocal() {
 
             {/* Resend API Key */}
             <div className="space-y-2 pt-4 border-t border-border">
-              <Label htmlFor="resend-api-key">Resend API Key</Label>
-              <div className="flex gap-2">
+              <Label htmlFor="resend-api-key" className="text-sm">Resend API Key</Label>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
                   <Input
                     id="resend-api-key"
@@ -281,7 +286,7 @@ export default function SettingsLocal() {
                       setIsResendKeySaved(false);
                     }}
                     placeholder="re_..."
-                    className="pr-10"
+                    className="pr-10 text-sm"
                   />
                   <Button
                     type="button"
@@ -297,7 +302,12 @@ export default function SettingsLocal() {
                     )}
                   </Button>
                 </div>
-                <Button onClick={handleSaveResendKey} disabled={isResendKeySaved || !resendApiKey.trim()}>
+                <Button 
+                  onClick={handleSaveResendKey} 
+                  disabled={isResendKeySaved || !resendApiKey.trim()}
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
                   {isResendKeySaved ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
@@ -308,28 +318,28 @@ export default function SettingsLocal() {
                   )}
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Required for sending anniversary emails. Get your key from{" "}
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Required for emails.{" "}
                 <a
                   href="https://resend.com/api-keys"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Resend Dashboard
+                  Get key
                 </a>
               </p>
             </div>
 
             {isResendKeySaved && resendApiKey && (
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
                 <div>
-                  <p className="font-medium text-foreground">Remove Resend API Key</p>
-                  <p className="text-sm text-muted-foreground">
-                    This will disable email sending
+                  <p className="font-medium text-foreground text-sm">Remove Resend API Key</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Disables email sending
                   </p>
                 </div>
-                <Button variant="outline" onClick={handleRemoveResendKey}>
+                <Button variant="outline" size="sm" onClick={handleRemoveResendKey} className="w-full sm:w-auto">
                   Remove
                 </Button>
               </div>
@@ -339,28 +349,30 @@ export default function SettingsLocal() {
 
         {/* Push Notifications */}
         <div className="card-elevated">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Bell className="w-5 h-5" />
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
               Push Notifications
             </h2>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+          <div className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="font-medium text-foreground">
+                <p className="font-medium text-foreground text-sm sm:text-base">
                   {notificationsEnabled ? "Notifications Enabled" : "Enable Notifications"}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {notificationsSupported 
-                    ? "Get reminded about upcoming anniversaries" 
+                    ? "Get reminded about anniversaries" 
                     : "Not supported in this browser"}
                 </p>
               </div>
               <Button 
                 variant={notificationsEnabled ? "outline" : "default"}
+                size="sm"
                 onClick={requestPermission}
                 disabled={!notificationsSupported || notificationsEnabled}
+                className="w-full sm:w-auto"
               >
                 {notificationsEnabled ? (
                   <>
@@ -380,47 +392,43 @@ export default function SettingsLocal() {
 
         {/* Cloud Backup */}
         <div className="card-elevated">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Cloud className="w-5 h-5" />
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <Cloud className="w-4 h-4 sm:w-5 sm:h-5" />
               Cloud Backup
             </h2>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-3">
             {/* Connection Status */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-              <div>
-                <p className="font-medium text-foreground flex items-center gap-2">
-                  <Cloud className="w-4 h-4 text-green-500" />
-                  Cloud Connected
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Backup your data to the cloud for safe keeping
-                </p>
-              </div>
+            <div className="p-3 sm:p-4 rounded-lg bg-muted/50">
+              <p className="font-medium text-foreground text-sm flex items-center gap-2">
+                <Cloud className="w-4 h-4 text-green-500" />
+                Cloud Connected
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Backup your data to the cloud
+              </p>
             </div>
 
             {/* Last Backup Info */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-              <div>
-                <p className="font-medium text-foreground">Last Cloud Backup</p>
-                <p className="text-sm text-muted-foreground">
-                  {lastBackup 
-                    ? `${format(parseISO(lastBackup.created_at), "PPP 'at' p")} — ${lastBackup.clients_count} clients, ${lastBackup.reminders_count} reminders`
-                    : "No cloud backups yet"}
-                </p>
-              </div>
+            <div className="p-3 sm:p-4 rounded-lg bg-muted/50">
+              <p className="font-medium text-foreground text-sm">Last Cloud Backup</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                {lastBackup 
+                  ? `${format(parseISO(lastBackup.created_at), "PP")} — ${lastBackup.clients_count} clients`
+                  : "No cloud backups yet"}
+              </p>
             </div>
 
             {/* Backup Button */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="font-medium text-foreground">Backup to Cloud</p>
-                <p className="text-sm text-muted-foreground">
-                  Save all your local data to the cloud
+                <p className="font-medium text-foreground text-sm">Backup to Cloud</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Save local data to cloud
                 </p>
               </div>
-              <Button variant="outline" onClick={backupToCloud} disabled={isCloudLoading}>
+              <Button variant="outline" size="sm" onClick={backupToCloud} disabled={isCloudLoading} className="w-full sm:w-auto">
                 {isCloudLoading ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
@@ -431,16 +439,16 @@ export default function SettingsLocal() {
             </div>
 
             {/* Restore Button */}
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="font-medium text-foreground">Restore from Cloud</p>
-                <p className="text-sm text-muted-foreground">
-                  Replace local data with your latest cloud backup
+                <p className="font-medium text-foreground text-sm">Restore from Cloud</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Replace local with cloud data
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" disabled={isCloudLoading || !lastBackup}>
+                  <Button variant="outline" size="sm" disabled={isCloudLoading || !lastBackup} className="w-full sm:w-auto">
                     {isCloudLoading ? (
                       <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                     ) : (
@@ -449,18 +457,17 @@ export default function SettingsLocal() {
                     Restore
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="mx-4 max-w-[calc(100%-2rem)] sm:max-w-lg">
                   <AlertDialogHeader>
                     <AlertDialogTitle>Restore from Cloud?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This will replace all your current local data with the latest cloud backup. 
-                      Any changes made since the last backup will be lost.
+                      This will replace all local data with the cloud backup. Changes since last backup will be lost.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={restoreFromCloud}>
-                      Yes, restore data
+                      Restore
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -469,31 +476,31 @@ export default function SettingsLocal() {
 
             {/* Delete Cloud Backups */}
             {lastBackup && (
-              <div className="flex items-center justify-between p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-destructive/5 border border-destructive/20">
                 <div>
-                  <p className="font-medium text-destructive">Delete Cloud Backups</p>
-                  <p className="text-sm text-muted-foreground">
-                    Remove all your backups from the cloud
+                  <p className="font-medium text-destructive text-sm">Delete Cloud Backups</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Remove all cloud backups
                   </p>
                 </div>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" disabled={isCloudLoading}>
+                    <Button variant="destructive" size="sm" disabled={isCloudLoading} className="w-full sm:w-auto">
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete
                     </Button>
                   </AlertDialogTrigger>
-                  <AlertDialogContent>
+                  <AlertDialogContent className="mx-4 max-w-[calc(100%-2rem)] sm:max-w-lg">
                     <AlertDialogHeader>
                       <AlertDialogTitle>Delete all cloud backups?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete all your cloud backups. Your local data will not be affected.
+                        This will permanently delete all cloud backups. Local data won't be affected.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction onClick={deleteCloudBackups}>
-                        Yes, delete backups
+                        Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -505,45 +512,43 @@ export default function SettingsLocal() {
 
         {/* Local Backup */}
         <div className="card-elevated">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Database className="w-5 h-5" />
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <Database className="w-4 h-4 sm:w-5 sm:h-5" />
               Local Backup
             </h2>
           </div>
-          <div className="p-6 space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-              <div>
-                <p className="font-medium text-foreground">Last Local Backup</p>
-                <p className="text-sm text-muted-foreground">
-                  {settings?.lastBackupDate 
-                    ? format(parseISO(settings.lastBackupDate), "PPP 'at' p")
-                    : "Never backed up locally"}
-                </p>
-              </div>
+          <div className="p-4 sm:p-6 space-y-3">
+            <div className="p-3 sm:p-4 rounded-lg bg-muted/50">
+              <p className="font-medium text-foreground text-sm">Last Local Backup</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                {settings?.lastBackupDate 
+                  ? format(parseISO(settings.lastBackupDate), "PP")
+                  : "Never backed up locally"}
+              </p>
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="font-medium text-foreground">Export Data</p>
-                <p className="text-sm text-muted-foreground">
-                  Download all your data as a JSON file
+                <p className="font-medium text-foreground text-sm">Export Data</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Download as JSON file
                 </p>
               </div>
-              <Button variant="outline" onClick={exportData}>
+              <Button variant="outline" size="sm" onClick={exportData} className="w-full sm:w-auto">
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-muted/50">
               <div>
-                <p className="font-medium text-foreground">Import Data</p>
-                <p className="text-sm text-muted-foreground">
-                  Restore data from a backup file
+                <p className="font-medium text-foreground text-sm">Import Data</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Restore from backup file
                 </p>
               </div>
-              <Button variant="outline" onClick={handleImportClick}>
+              <Button variant="outline" size="sm" onClick={handleImportClick} className="w-full sm:w-auto">
                 <Upload className="w-4 h-4 mr-2" />
                 Import
               </Button>
@@ -556,32 +561,31 @@ export default function SettingsLocal() {
               />
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-lg bg-destructive/5 border border-destructive/20">
               <div>
-                <p className="font-medium text-destructive">Clear All Data</p>
-                <p className="text-sm text-muted-foreground">
-                  This will remove all clients permanently
+                <p className="font-medium text-destructive text-sm">Clear All Data</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Remove all clients permanently
                 </p>
               </div>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
+                  <Button variant="destructive" size="sm" className="w-full sm:w-auto">
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Clear Data
+                    Clear
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="mx-4 max-w-[calc(100%-2rem)] sm:max-w-lg">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete all
-                      your clients and reset the app to its default state.
+                      This will permanently delete all clients and reset the app.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={clearAllData}>
-                      Yes, clear all data
+                      Clear all
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -592,19 +596,18 @@ export default function SettingsLocal() {
 
         {/* About */}
         <div className="card-elevated">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-                <SettingsIcon className="w-6 h-6 text-primary-foreground" />
+          <div className="p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary flex items-center justify-center">
+                <SettingsIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
               </div>
               <div>
-                <h2 className="font-semibold text-foreground">KeyKeep</h2>
-                <p className="text-sm text-muted-foreground">Version 2.1.0 — Offline-First with Cloud Backup</p>
+                <h2 className="font-semibold text-foreground text-sm sm:text-base">KeyKeep</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">v2.1.0 — Offline-First</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              A commercial-grade client anniversary tracker for real estate agents. 
-              Your data is stored locally and works offline — cloud backup keeps it safe.
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Client anniversary tracker for real estate agents. Works offline with cloud backup.
             </p>
           </div>
         </div>
