@@ -22,6 +22,7 @@ export function useAutoSync() {
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRestoringRef = useRef(false);
+  const hasRestoredRef = useRef(false);
 
   // Track online/offline status
   useEffect(() => {
@@ -49,7 +50,7 @@ export function useAutoSync() {
     };
   }, []);
 
-  // Backup to cloud
+  // Backup to cloud - uses ref for user to avoid stale closures
   const backupToCloud = useCallback(async (silent: boolean = true) => {
     if (!user) return false;
     if (isRestoringRef.current) return false; // Don't backup while restoring
@@ -91,9 +92,10 @@ export function useAutoSync() {
         });
       }
 
+      console.log('[AutoSync] Backup completed successfully');
       return true;
     } catch (error: any) {
-      console.error('Auto-backup error:', error);
+      console.error('[AutoSync] Backup error:', error);
       // Mark as pending for retry
       localStorage.setItem(SYNC_PENDING_KEY, 'true');
       setHasPendingChanges(true);
@@ -107,8 +109,10 @@ export function useAutoSync() {
   const restoreFromCloud = useCallback(async (silent: boolean = false) => {
     if (!user) return false;
 
+    console.log('[AutoSync] Starting restore for user:', user.id);
     isRestoringRef.current = true;
     setIsSyncing(true);
+    
     try {
       const { data, error } = await supabase
         .from('backup_snapshots')
@@ -121,7 +125,9 @@ export function useAutoSync() {
       if (error) {
         if (error.code === 'PGRST116') {
           // No backup found - this is fine for new users
-          console.log('No cloud backup found for user');
+          console.log('[AutoSync] No cloud backup found for user');
+          // Still mark as restored to prevent repeated attempts
+          localStorage.setItem(LAST_RESTORED_KEY, user.id);
           return false;
         }
         throw error;
@@ -132,6 +138,11 @@ export function useAutoSync() {
       if (!backupData.clients) {
         throw new Error('Invalid backup data format');
       }
+
+      console.log('[AutoSync] Restoring data:', {
+        clients: backupData.clients.length,
+        reminders: backupData.reminders?.length || 0
+      });
 
       // Clear existing local data and restore from backup
       await db.clients.clear();
@@ -158,9 +169,10 @@ export function useAutoSync() {
         });
       }
 
+      console.log('[AutoSync] Restore completed successfully');
       return true;
     } catch (error: any) {
-      console.error('Auto-restore error:', error);
+      console.error('[AutoSync] Restore error:', error);
       if (!silent) {
         toast({
           title: "Restore Failed",
@@ -206,20 +218,34 @@ export function useAutoSync() {
     }, SYNC_DEBOUNCE_MS);
   }, [user, backupToCloud]);
 
-  // Auto-restore on login
+  // Auto-restore on login - separate effect with proper guards
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      hasRestoredRef.current = false;
+      return;
+    }
+
+    // Prevent multiple restore attempts in the same session
+    if (hasRestoredRef.current) {
+      return;
+    }
 
     const lastRestoredUser = localStorage.getItem(LAST_RESTORED_KEY);
     
-    // Only restore if this is a new login (different user or first time)
+    // Only restore if this is a new login (different user or first time on this device)
     if (lastRestoredUser !== user.id) {
+      console.log('[AutoSync] New login detected, restoring from cloud...');
+      hasRestoredRef.current = true;
       restoreFromCloud(false);
     } else if (localStorage.getItem(SYNC_PENDING_KEY) === 'true' && navigator.onLine) {
       // If same user and has pending changes, sync them
+      console.log('[AutoSync] Same user with pending changes, backing up...');
+      hasRestoredRef.current = true;
       backupToCloud(true);
+    } else {
+      hasRestoredRef.current = true;
     }
-  }, [user, restoreFromCloud, backupToCloud]);
+  }, [user?.id]); // Only depend on user.id to prevent re-runs
 
   // Cleanup timeout on unmount
   useEffect(() => {
