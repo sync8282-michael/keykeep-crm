@@ -477,22 +477,22 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
         />
       </div>
 
-      {/* Communication Preferences - Disabled for now */}
-      <div className="space-y-4 p-4 rounded-lg bg-muted/50 opacity-60">
-        <Label className="text-base">Communication Preferences</Label>
+      {/* Preferred Communication Method */}
+      <div className="space-y-4 p-4 rounded-lg bg-muted/50">
+        <Label className="text-base">Preferred Contact Method</Label>
         <p className="text-sm text-muted-foreground">
-          Automated communications coming soon.
+          Select the client's preferred way to be contacted. This is for your reference when reaching out manually.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex items-center space-x-2">
             <Checkbox
               id="optInEmail"
-              checked={false}
-              disabled
+              checked={optInEmail}
+              onCheckedChange={(checked) => setOptInEmail(checked === true)}
             />
             <label
               htmlFor="optInEmail"
-              className="text-sm font-medium leading-none cursor-not-allowed opacity-70"
+              className="text-sm font-medium leading-none cursor-pointer"
             >
               Email
             </label>
@@ -500,12 +500,12 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
           <div className="flex items-center space-x-2">
             <Checkbox
               id="optInWhatsApp"
-              checked={false}
-              disabled
+              checked={optInWhatsApp}
+              onCheckedChange={(checked) => setOptInWhatsApp(checked === true)}
             />
             <label
               htmlFor="optInWhatsApp"
-              className="text-sm font-medium leading-none cursor-not-allowed opacity-70"
+              className="text-sm font-medium leading-none cursor-pointer"
             >
               WhatsApp
             </label>
@@ -513,12 +513,12 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
           <div className="flex items-center space-x-2">
             <Checkbox
               id="optInSMS"
-              checked={false}
-              disabled
+              checked={optInSMS}
+              onCheckedChange={(checked) => setOptInSMS(checked === true)}
             />
             <label
               htmlFor="optInSMS"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm font-medium leading-none cursor-pointer"
             >
               SMS
             </label>

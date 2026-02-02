@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { format, parseISO, differenceInYears } from "date-fns";
 import { 
-  ArrowLeft, Mail, Phone, Calendar, Home, Edit, MessageCircle, 
-  Trash2, Send, Loader2, User, Cake, Bell, Plus, MapPin
+  ArrowLeft, Mail, Phone, Calendar, Edit, MessageCircle, 
+  Trash2, Send, User, Cake, Bell, Plus, MapPin
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { ClientFormLocal } from "@/components/forms/ClientFormLocal";
@@ -24,8 +24,6 @@ import { ReminderFormDialog } from "@/components/reminders/ReminderFormDialog";
 import { ClientDetailSkeleton } from "@/components/skeletons/PageSkeletons";
 import { useLocalClient, useClientMutations, useLocalClients } from "@/hooks/useLocalClients";
 import { useRemindersByClient, useReminderMutations } from "@/hooks/useRemindersLocal";
-import { useResendEmail } from "@/hooks/useResendEmail";
-import { useSettings } from "@/hooks/useSettings";
 import { cn } from "@/lib/utils";
 
 const contactMethodLabels = {
@@ -46,9 +44,7 @@ export default function ClientDetailLocal() {
   const { clients } = useLocalClients();
   const { updateClient, deleteClient } = useClientMutations();
   const { reminders } = useRemindersByClient(id);
-  const { markAsSent, deleteReminder } = useReminderMutations();
-  const { sendAnniversaryEmail, isSending } = useResendEmail();
-  const { settings } = useSettings();
+  const { markAsSent } = useReminderMutations();
 
   const handleUpdate = async (data: Parameters<typeof updateClient>[1]) => {
     if (!id) return;
@@ -254,14 +250,14 @@ export default function ClientDetailLocal() {
                 )}
               </div>
 
-              {/* Opt-in Status */}
+              {/* Preferred Contact Methods */}
               <div className="flex items-center gap-2 mt-4 flex-wrap">
-                <span className="text-sm text-muted-foreground">Opted in:</span>
+                <span className="text-sm text-muted-foreground">Prefers:</span>
                 {client.optInEmail && <Badge variant="outline" className="text-xs">Email</Badge>}
                 {client.optInWhatsApp && <Badge variant="outline" className="text-xs">WhatsApp</Badge>}
                 {client.optInSMS && <Badge variant="outline" className="text-xs">SMS</Badge>}
                 {!client.optInEmail && !client.optInWhatsApp && !client.optInSMS && (
-                  <span className="text-sm text-muted-foreground italic">None</span>
+                  <span className="text-sm text-muted-foreground italic">Not specified</span>
                 )}
               </div>
 
@@ -312,28 +308,16 @@ export default function ClientDetailLocal() {
           )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Quick Contact Actions */}
         <div className="card-elevated p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Send Message</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Quick Contact</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Reach out to your client using their preferred method.
+          </p>
           <div className="flex flex-wrap gap-3">
-            {settings?.resendApiKey && client.optInEmail && (
-              <Button
-                onClick={() => sendAnniversaryEmail(client)}
-                disabled={isSending}
-                className="gap-2"
-              >
-                {isSending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-                Send via Resend
-              </Button>
-            )}
             <Button
               onClick={handleSendEmail}
               variant="outline"
-              disabled={!client.optInEmail}
               className="gap-2"
             >
               <Mail className="w-4 h-4" />
@@ -342,7 +326,6 @@ export default function ClientDetailLocal() {
             <Button
               onClick={handleSendWhatsApp}
               variant="outline"
-              disabled={!client.optInWhatsApp}
               className="gap-2"
             >
               <MessageCircle className="w-4 h-4" />
@@ -351,7 +334,6 @@ export default function ClientDetailLocal() {
             <Button
               onClick={handleSendSMS}
               variant="outline"
-              disabled={!client.optInSMS}
               className="gap-2"
             >
               <Phone className="w-4 h-4" />
@@ -366,11 +348,6 @@ export default function ClientDetailLocal() {
               Call
             </Button>
           </div>
-          {!settings?.resendApiKey && client.optInEmail && (
-            <p className="text-sm text-muted-foreground mt-3">
-              Add your Resend API key in Settings to send emails directly.
-            </p>
-          )}
         </div>
       </div>
 
