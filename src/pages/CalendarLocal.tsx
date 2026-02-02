@@ -210,44 +210,24 @@ export default function CalendarLocal() {
                         {format(day, "d")}
                       </span>
 
-                      {/* Mobile: Compact dots with counts */}
-                      <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
+                      {/* Colored dots with counts - all screen sizes */}
+                      <div className="mt-1 sm:mt-2 flex flex-wrap gap-1 sm:gap-1.5">
                         {eventCounts.anniversary > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <div className="w-2 h-2 rounded-full bg-amber-500" />
-                            <span className="text-[10px] text-amber-600 font-medium">{eventCounts.anniversary}</span>
+                          <div className="flex items-center gap-0.5 sm:gap-1">
+                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-amber-500" />
+                            <span className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 font-medium">{eventCounts.anniversary}</span>
                           </div>
                         )}
                         {eventCounts.birthday > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <div className="w-2 h-2 rounded-full bg-pink-500" />
-                            <span className="text-[10px] text-pink-600 font-medium">{eventCounts.birthday}</span>
+                          <div className="flex items-center gap-0.5 sm:gap-1">
+                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-pink-500" />
+                            <span className="text-[10px] sm:text-xs text-pink-600 dark:text-pink-400 font-medium">{eventCounts.birthday}</span>
                           </div>
                         )}
                         {eventCounts.reminder > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <div className="w-2 h-2 rounded-full bg-blue-500" />
-                            <span className="text-[10px] text-blue-600 font-medium">{eventCounts.reminder}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Desktop: Full event labels */}
-                      <div className="mt-1 space-y-1 hidden sm:block">
-                        {dayEvents.slice(0, 2).map((event, idx) => (
-                          <div
-                            key={idx}
-                            className={cn(
-                              "text-xs px-1.5 py-0.5 rounded truncate",
-                              eventColors[event.type]
-                            )}
-                          >
-                            {event.label.length > 12 ? event.label.substring(0, 10) + '...' : event.label}
-                          </div>
-                        ))}
-                        {dayEvents.length > 2 && (
-                          <div className="text-xs text-muted-foreground px-1">
-                            +{dayEvents.length - 2} more
+                          <div className="flex items-center gap-0.5 sm:gap-1">
+                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-blue-500" />
+                            <span className="text-[10px] sm:text-xs text-blue-600 dark:text-blue-400 font-medium">{eventCounts.reminder}</span>
                           </div>
                         )}
                       </div>
