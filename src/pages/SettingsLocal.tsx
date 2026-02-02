@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor, Cloud, CloudOff, Bell, RefreshCw, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Database, Key, Trash2, Eye, EyeOff, CheckCircle2, Download, Upload, Moon, Sun, Monitor, Cloud, CloudOff, Bell, RefreshCw, LogOut, HardDrive } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +27,7 @@ import { useSettings } from "@/hooks/useSettings";
 import { useBackup } from "@/hooks/useBackup";
 import { useCloudBackup } from "@/hooks/useCloudBackup";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useStorageUsage, formatBytes, getUsagePercentage } from "@/hooks/useStorageUsage";
 import { useAuth } from "@/auth/AuthProvider";
 import { format, parseISO } from "date-fns";
 
@@ -34,6 +36,7 @@ export default function SettingsLocal() {
   const { exportData, importData, clearAllData } = useBackup();
   const { isLoading: isCloudLoading, lastBackup, fetchLastBackup, backupToCloud, restoreFromCloud, deleteCloudBackups } = useCloudBackup();
   const { isSupported: notificationsSupported, isEnabled: notificationsEnabled, requestPermission } = usePushNotifications();
+  const storageUsage = useStorageUsage();
   const { user, signOut } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -507,6 +510,96 @@ export default function SettingsLocal() {
                 </AlertDialog>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Storage Usage */}
+        <div className="card-elevated">
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
+              <HardDrive className="w-4 h-4 sm:w-5 sm:h-5" />
+              Storage Usage
+            </h2>
+          </div>
+          <div className="p-4 sm:p-6 space-y-4">
+            {/* Storage Progress */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Cloud Storage</span>
+                <span className="font-medium">
+                  {storageUsage.isLoading ? (
+                    <RefreshCw className="w-3 h-3 animate-spin inline" />
+                  ) : (
+                    `${formatBytes(storageUsage.cloudBytes)} / ${formatBytes(storageUsage.maxBytes)}`
+                  )}
+                </span>
+              </div>
+              <Progress 
+                value={storageUsage.isLoading ? 0 : getUsagePercentage(storageUsage.cloudBytes, storageUsage.maxBytes)} 
+                className="h-2"
+              />
+              <p className="text-xs text-muted-foreground">
+                {storageUsage.isLoading ? (
+                  "Calculating..."
+                ) : (
+                  `${getUsagePercentage(storageUsage.cloudBytes, storageUsage.maxBytes)}% of cloud storage used`
+                )}
+              </p>
+            </div>
+
+            {/* Storage Details */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-lg sm:text-xl font-semibold text-foreground">
+                  {storageUsage.isLoading ? "-" : storageUsage.clientsCount}
+                </p>
+                <p className="text-xs text-muted-foreground">Clients</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center">
+                <p className="text-lg sm:text-xl font-semibold text-foreground">
+                  {storageUsage.isLoading ? "-" : storageUsage.remindersCount}
+                </p>
+                <p className="text-xs text-muted-foreground">Reminders</p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50 text-center col-span-2 sm:col-span-1">
+                <p className="text-lg sm:text-xl font-semibold text-foreground">
+                  {storageUsage.isLoading ? "-" : storageUsage.backupsCount}
+                </p>
+                <p className="text-xs text-muted-foreground">Cloud Backups</p>
+              </div>
+            </div>
+
+            {/* Local vs Cloud */}
+            <div className="p-3 sm:p-4 rounded-lg bg-muted/50 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Local Data Size</span>
+                <span className="font-medium">
+                  {storageUsage.isLoading ? "-" : formatBytes(storageUsage.localBytes)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Cloud Backups Size</span>
+                <span className="font-medium">
+                  {storageUsage.isLoading ? "-" : formatBytes(storageUsage.cloudBytes)}
+                </span>
+              </div>
+            </div>
+
+            {/* Refresh Button */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={storageUsage.refresh}
+              disabled={storageUsage.isLoading}
+              className="w-full sm:w-auto"
+            >
+              {storageUsage.isLoading ? (
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Refresh Usage
+            </Button>
           </div>
         </div>
 
