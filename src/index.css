@@ -129,7 +129,7 @@
   }
 
   .stat-card {
-    @apply bg-card rounded-xl border border-border p-5 hover:border-primary/30 transition-colors duration-200;
+    @apply bg-card rounded-xl border border-border p-3 sm:p-5 hover:border-primary/30 transition-colors duration-200;
   }
 
   .nav-link {
@@ -141,11 +141,11 @@
   }
 
   .form-section {
-    @apply bg-card rounded-xl border border-border p-6;
+    @apply bg-card rounded-xl border border-border p-4 sm:p-6;
   }
 
   .badge-property {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
   }
 
   .badge-house {
