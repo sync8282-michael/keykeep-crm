@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { differenceInYears, parseISO } from "date-fns";
-import { Users, Calendar, Plus, Home, Mail, MessageCircle, Cake, Bell } from "lucide-react";
+import { differenceInYears, parseISO, format } from "date-fns";
+import { Users, Calendar, Plus, Home, Mail, MessageCircle, Cake, Bell, Phone } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
@@ -104,56 +104,91 @@ export default function DashboardLocal() {
                     ? differenceInYears(new Date(), parseISO(client.moveInDate))
                     : 0;
 
-                  return (
-                    <Link
-                      key={client.id}
-                      to={`/clients/${client.id}`}
-                      className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all"
-                    >
-                      {client.imagePath ? (
-                        <img
-                          src={client.imagePath}
-                          alt={client.address}
-                          className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-20 h-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Home className="w-6 h-6 text-primary" />
-                        </div>
-                      )}
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-medium text-foreground truncate">
-                              {client.name}
-                            </h3>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {client.address}
-                            </p>
-                          </div>
-                          <span className={cn(
-                            "badge-property flex-shrink-0",
-                            client.houseType === "house" && "badge-house",
-                            client.houseType === "farm" && "badge-farm",
-                            client.houseType === "apartment" && "badge-apartment",
-                            !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary text-secondary-foreground"
+                    return (
+                      <Link
+                        key={client.id}
+                        to={`/clients/${client.id}`}
+                        className="group flex items-stretch gap-5 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200"
+                      >
+                        {/* Profile Picture - Square */}
+                        <div className="relative flex-shrink-0">
+                          {client.avatarPath ? (
+                            <img
+                              src={client.avatarPath}
+                              alt={client.name}
+                              className="w-20 h-20 object-cover rounded-xl"
+                            />
+                          ) : (
+                            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                              <span className="text-primary font-bold text-xl">
+                                {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          {/* Property type indicator */}
+                          <div className={cn(
+                            "absolute -bottom-1 -right-1 w-6 h-6 rounded-md flex items-center justify-center shadow-sm",
+                            client.houseType === "house" && "bg-blue-500",
+                            client.houseType === "farm" && "bg-green-500",
+                            client.houseType === "apartment" && "bg-purple-500",
+                            !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary"
                           )}>
-                            {client.houseType}
-                          </span>
+                            <Home className="w-3.5 h-3.5 text-white" />
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                          <span>{yearsOwned} year{yearsOwned !== 1 ? "s" : ""} owned</span>
-                          {client.optInEmail && (
-                            <Mail className="w-3.5 h-3.5 text-primary" />
-                          )}
-                          {client.optInWhatsApp && (
-                            <MessageCircle className="w-3.5 h-3.5 text-success" />
-                          )}
+
+                        {/* Client Info */}
+                        <div className="flex-1 min-w-0 flex flex-col justify-center py-0.5">
+                          <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors truncate">
+                            {client.name}
+                          </h3>
+                          <p className="text-sm text-muted-foreground truncate mt-0.5">
+                            {client.address}
+                          </p>
+                          
+                          {/* Info row with details */}
+                          <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-4 h-4" />
+                              <span>{yearsOwned} yr{yearsOwned !== 1 ? "s" : ""}</span>
+                            </div>
+                            {client.phone && (
+                              <div className="flex items-center gap-1.5">
+                                <Phone className="w-4 h-4" />
+                                <span>{client.phone}</span>
+                              </div>
+                            )}
+                            {client.birthday && (
+                              <div className="flex items-center gap-1.5">
+                                <Cake className="w-4 h-4" />
+                                <span>{format(parseISO(client.birthday), "MMM d")}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Link>
-                  );
+
+                        {/* Contact preferences - Right side */}
+                        <div className="flex flex-col items-end justify-center gap-2 flex-shrink-0">
+                          <div className="flex items-center gap-2">
+                            {client.optInEmail && (
+                              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                                <Mail className="w-4 h-4 text-primary" />
+                              </div>
+                            )}
+                            {client.optInWhatsApp && (
+                              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-success/10 hover:bg-success/20 transition-colors">
+                                <MessageCircle className="w-4 h-4 text-success" />
+                              </div>
+                            )}
+                            {client.optInSMS && (
+                              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 transition-colors">
+                                <Phone className="w-4 h-4 text-orange-500" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    );
                 })}
               </div>
             ) : (
