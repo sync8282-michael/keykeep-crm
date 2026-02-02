@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Home, Users, Calendar, Bell, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SyncStatusIndicator } from "@/components/AutoSyncProvider";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
@@ -60,6 +61,9 @@ export function TabletHeader() {
               </Link>
             );
           })}
+          <div className="ml-2 pl-2 border-l border-border">
+            <SyncStatusIndicator />
+          </div>
         </nav>
       </div>
     </header>

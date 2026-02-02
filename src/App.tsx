@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SplashScreen } from "@/components/SplashScreen";
 import { initializeSettings, db } from "@/db/database";
 import { AuthProvider, useAuth } from "@/auth/AuthProvider";
+import { AutoSyncProvider } from "@/components/AutoSyncProvider";
 import DashboardLocal from "./pages/DashboardLocal";
 import ClientsLocal from "./pages/ClientsLocal";
 import ClientDetailLocal from "./pages/ClientDetailLocal";
@@ -82,7 +83,7 @@ function AppRoutes() {
   }
 
   return (
-    <>
+    <AutoSyncProvider>
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       <div
         className={`transition-opacity duration-500 ${
@@ -157,7 +158,7 @@ function AppRoutes() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
-    </>
+    </AutoSyncProvider>
   );
 }
 

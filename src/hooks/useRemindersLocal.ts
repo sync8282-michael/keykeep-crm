@@ -2,7 +2,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useCallback } from 'react';
 import { db, Reminder, generateId, calculateNextDueDate } from '@/db/database';
 import { toast } from '@/hooks/use-toast';
-import { format, parseISO, isBefore, isToday, isTomorrow, addDays } from 'date-fns';
+import { triggerAutoSync } from '@/hooks/useAutoSync';
+import { format, parseISO, isBefore, addDays } from 'date-fns';
 
 export function useReminders() {
   const reminders = useLiveQuery(() => 
@@ -92,6 +93,9 @@ export function useReminderMutations() {
       description: `Reminder scheduled for ${format(parseISO(nextDueDate), 'MMM d, yyyy')}`,
     });
 
+    // Trigger auto-sync
+    triggerAutoSync();
+
     return id;
   }, []);
 
@@ -105,6 +109,9 @@ export function useReminderMutations() {
       title: "Reminder Updated",
       description: "Your reminder has been updated.",
     });
+
+    // Trigger auto-sync
+    triggerAutoSync();
   }, []);
 
   const deleteReminder = useCallback(async (id: string) => {
@@ -114,6 +121,9 @@ export function useReminderMutations() {
       title: "Reminder Deleted",
       description: "The reminder has been removed.",
     });
+
+    // Trigger auto-sync
+    triggerAutoSync();
   }, []);
 
   const markAsSent = useCallback(async (id: string) => {
@@ -160,6 +170,9 @@ export function useReminderMutations() {
         ? "Next reminder scheduled." 
         : "Reminder completed.",
     });
+
+    // Trigger auto-sync
+    triggerAutoSync();
   }, []);
 
   const snoozeReminder = useCallback(async (id: string, days: number = 1) => {
@@ -178,6 +191,9 @@ export function useReminderMutations() {
       title: "Reminder Snoozed",
       description: `Rescheduled for ${format(newDate, 'MMM d, yyyy')}`,
     });
+
+    // Trigger auto-sync
+    triggerAutoSync();
   }, []);
 
   return {
@@ -218,6 +234,9 @@ export async function createAnniversaryReminder(
     createdAt: now,
     updatedAt: now,
   });
+
+  // Trigger auto-sync
+  triggerAutoSync();
 }
 
 // Create birthday reminder
@@ -249,4 +268,7 @@ export async function createBirthdayReminder(
     createdAt: now,
     updatedAt: now,
   });
+
+  // Trigger auto-sync
+  triggerAutoSync();
 }

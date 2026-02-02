@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import nameLogo from "@/assets/name-logo.svg";
 import { useAuth } from "@/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
+import { SyncStatusIndicator } from "@/components/AutoSyncProvider";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
@@ -60,14 +61,19 @@ export function Header() {
             </Link>
 
             {user && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-2"
-                onClick={handleLogout}
-              >
-                Log out
-              </Button>
+              <>
+                <div className="ml-2 hidden sm:block">
+                  <SyncStatusIndicator />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-2"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </Button>
+              </>
             )}
           </nav>
         </div>

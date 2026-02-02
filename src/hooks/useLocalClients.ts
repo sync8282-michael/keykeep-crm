@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, Client, generateId } from '@/db/database';
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { triggerAutoSync } from '@/hooks/useAutoSync';
 
 export function useLocalClients() {
   const clients = useLiveQuery(() => 
@@ -39,6 +40,9 @@ export function useClientMutations() {
       description: `${data.name} has been added successfully.`,
     });
 
+    // Trigger auto-sync
+    triggerAutoSync();
+
     return id;
   }, []);
 
@@ -52,6 +56,9 @@ export function useClientMutations() {
       title: "Client Updated",
       description: "Changes saved successfully.",
     });
+
+    // Trigger auto-sync
+    triggerAutoSync();
   }, []);
 
   const deleteClient = useCallback(async (id: string) => {
@@ -61,6 +68,9 @@ export function useClientMutations() {
       title: "Client Deleted",
       description: "Client has been removed.",
     });
+
+    // Trigger auto-sync
+    triggerAutoSync();
   }, []);
 
   return { createClient, updateClient, deleteClient };
