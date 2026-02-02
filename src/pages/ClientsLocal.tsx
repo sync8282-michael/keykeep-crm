@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Search as SearchIcon, Home, Mail, MessageCircle } from "lucide-react";
+import { Plus, Search as SearchIcon, Home, Mail, MessageCircle, Phone, Calendar, Cake } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { ClientFormLocal } from "@/components/forms/ClientFormLocal";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ClientsSkeleton } from "@/components/skeletons/PageSkeletons";
@@ -92,6 +93,7 @@ export default function ClientsLocal() {
                       to={`/clients/${client.id}`}
                       className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all"
                     >
+                      {/* Property Image */}
                       {client.imagePath ? (
                         <img
                           src={client.imagePath}
@@ -105,38 +107,77 @@ export default function ClientsLocal() {
                       )}
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h3 className="font-medium text-foreground">
-                              {client.name}
-                            </h3>
+                        {/* Header row with avatar, name, and badge */}
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            {client.avatarPath ? (
+                              <AvatarImage src={client.avatarPath} alt={client.name} />
+                            ) : null}
+                            <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                              {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-foreground truncate">
+                                {client.name}
+                              </h3>
+                              <span className={cn(
+                                "badge-property flex-shrink-0 text-xs",
+                                client.houseType === "house" && "badge-house",
+                                client.houseType === "farm" && "badge-farm",
+                                client.houseType === "apartment" && "badge-apartment",
+                                !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary text-secondary-foreground"
+                              )}>
+                                {client.houseType}
+                              </span>
+                            </div>
                             <p className="text-sm text-muted-foreground truncate">
                               {client.address}
                             </p>
                           </div>
-                          <span className={cn(
-                            "badge-property flex-shrink-0",
-                            client.houseType === "house" && "badge-house",
-                            client.houseType === "farm" && "badge-farm",
-                            client.houseType === "apartment" && "badge-apartment",
-                            !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary text-secondary-foreground"
-                          )}>
-                            {client.houseType}
-                          </span>
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-muted-foreground">
-                          <span>{yearsOwned} year{yearsOwned !== 1 ? "s" : ""} owned</span>
-                          <span>•</span>
-                          <span>{client.phone}</span>
-                          <div className="flex items-center gap-2 ml-auto">
-                            {client.optInEmail && (
-                              <Mail className="w-4 h-4 text-primary" />
-                            )}
-                            {client.optInWhatsApp && (
-                              <MessageCircle className="w-4 h-4 text-success" />
-                            )}
+                        {/* Info row with details */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" />
+                            <span>{yearsOwned} year{yearsOwned !== 1 ? "s" : ""} owned</span>
                           </div>
+                          {client.phone && (
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>{client.phone}</span>
+                            </div>
+                          )}
+                          {client.birthday && (
+                            <div className="flex items-center gap-1.5">
+                              <Cake className="w-3.5 h-3.5" />
+                              <span>{format(parseISO(client.birthday), "MMM d")}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Contact preferences */}
+                        <div className="flex items-center gap-2 mt-2">
+                          {client.optInEmail && (
+                            <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                              <Mail className="w-3 h-3" />
+                              <span>Email</span>
+                            </div>
+                          )}
+                          {client.optInWhatsApp && (
+                            <div className="flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-0.5 rounded-full">
+                              <MessageCircle className="w-3 h-3" />
+                              <span>WhatsApp</span>
+                            </div>
+                          )}
+                          {client.optInSMS && (
+                            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-full">
+                              <Phone className="w-3 h-3" />
+                              <span>SMS</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </Link>
