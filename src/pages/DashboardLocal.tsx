@@ -49,24 +49,28 @@ export default function DashboardLocal() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatsCard
             title="Total Clients"
+            mobileTitle="Clients"
             value={stats.totalClients}
             icon={Users}
             variant="primary"
           />
           <StatsCard
             title="Anniversaries This Month"
+            mobileTitle="Anniversaries"
             value={stats.anniversariesThisMonth}
             icon={Calendar}
             variant="warning"
           />
           <StatsCard
             title="Birthdays This Month"
+            mobileTitle="Birthdays"
             value={stats.birthdaysThisMonth}
             icon={Cake}
             variant="success"
           />
           <StatsCard
             title="Reminders This Month"
+            mobileTitle="Reminders"
             value={stats.remindersThisMonth}
             icon={Bell}
             variant="primary"
