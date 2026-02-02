@@ -176,7 +176,7 @@ export default function CalendarLocal() {
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1">
                 {emptyDays.map((_, i) => (
-                  <div key={`empty-${i}`} className="h-24" />
+                  <div key={`empty-${i}`} className="h-16 sm:h-24" />
                 ))}
                 {daysInMonth.map((day) => {
                   const dayEvents = getEventsForDay(day);
@@ -184,26 +184,56 @@ export default function CalendarLocal() {
                   const isToday = isSameDay(day, new Date());
                   const isSelected = selectedDate && isSameDay(day, selectedDate);
 
+                  // Group events by type for mobile dots
+                  const eventCounts = {
+                    anniversary: dayEvents.filter(e => e.type === 'anniversary').length,
+                    birthday: dayEvents.filter(e => e.type === 'birthday').length,
+                    reminder: dayEvents.filter(e => e.type === 'reminder').length,
+                  };
+
                   return (
                     <button
                       key={day.toISOString()}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        "h-24 p-2 rounded-lg text-left transition-all duration-200 hover:bg-muted",
+                        "h-16 sm:h-24 p-1 sm:p-2 rounded-lg text-left transition-all duration-200 hover:bg-muted",
                         isToday && "bg-primary/5 border border-primary/20",
                         isSelected && "bg-primary/10 border-2 border-primary",
                         !isToday && !isSelected && "border border-transparent"
                       )}
                     >
                       <span className={cn(
-                        "text-sm font-medium",
+                        "text-xs sm:text-sm font-medium",
                         isToday && "text-primary",
                         !isToday && "text-foreground"
                       )}>
                         {format(day, "d")}
                       </span>
 
-                      <div className="mt-1 space-y-1">
+                      {/* Mobile: Compact dots with counts */}
+                      <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
+                        {eventCounts.anniversary > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <div className="w-2 h-2 rounded-full bg-amber-500" />
+                            <span className="text-[10px] text-amber-600 font-medium">{eventCounts.anniversary}</span>
+                          </div>
+                        )}
+                        {eventCounts.birthday > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <div className="w-2 h-2 rounded-full bg-pink-500" />
+                            <span className="text-[10px] text-pink-600 font-medium">{eventCounts.birthday}</span>
+                          </div>
+                        )}
+                        {eventCounts.reminder > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <div className="w-2 h-2 rounded-full bg-blue-500" />
+                            <span className="text-[10px] text-blue-600 font-medium">{eventCounts.reminder}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Desktop: Full event labels */}
+                      <div className="mt-1 space-y-1 hidden sm:block">
                         {dayEvents.slice(0, 2).map((event, idx) => (
                           <div
                             key={idx}
