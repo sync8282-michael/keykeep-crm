@@ -91,55 +91,40 @@ export default function ClientsLocal() {
                     <Link
                       key={client.id}
                       to={`/clients/${client.id}`}
-                      className="flex items-start gap-4 p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all"
+                      className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all"
                     >
-                      {/* Property Image */}
-                      {client.imagePath ? (
-                        <img
-                          src={client.imagePath}
-                          alt={client.address}
-                          className="w-24 h-20 object-cover rounded-lg flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-24 h-20 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Home className="w-8 h-8 text-primary" />
-                        </div>
-                      )}
+                      {/* Profile Picture */}
+                      <Avatar className="h-14 w-14 flex-shrink-0">
+                        {client.avatarPath ? (
+                          <AvatarImage src={client.avatarPath} alt={client.name} />
+                        ) : null}
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
+                          {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
 
+                      {/* Client Info */}
                       <div className="flex-1 min-w-0">
-                        {/* Header row with avatar, name, and badge */}
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 flex-shrink-0">
-                            {client.avatarPath ? (
-                              <AvatarImage src={client.avatarPath} alt={client.name} />
-                            ) : null}
-                            <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                              {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-foreground truncate">
-                                {client.name}
-                              </h3>
-                              <span className={cn(
-                                "badge-property flex-shrink-0 text-xs",
-                                client.houseType === "house" && "badge-house",
-                                client.houseType === "farm" && "badge-farm",
-                                client.houseType === "apartment" && "badge-apartment",
-                                !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary text-secondary-foreground"
-                              )}>
-                                {client.houseType}
-                              </span>
-                            </div>
-                            <p className="text-sm text-muted-foreground truncate">
-                              {client.address}
-                            </p>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-foreground truncate">
+                            {client.name}
+                          </h3>
+                          <span className={cn(
+                            "badge-property flex-shrink-0 text-xs",
+                            client.houseType === "house" && "badge-house",
+                            client.houseType === "farm" && "badge-farm",
+                            client.houseType === "apartment" && "badge-apartment",
+                            !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary text-secondary-foreground"
+                          )}>
+                            {client.houseType}
+                          </span>
                         </div>
+                        <p className="text-sm text-muted-foreground truncate">
+                          {client.address}
+                        </p>
                         
                         {/* Info row with details */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1.5">
                             <Calendar className="w-3.5 h-3.5" />
                             <span>{yearsOwned} year{yearsOwned !== 1 ? "s" : ""} owned</span>
@@ -180,6 +165,19 @@ export default function ClientsLocal() {
                           )}
                         </div>
                       </div>
+
+                      {/* Property Image on the right */}
+                      {client.imagePath ? (
+                        <img
+                          src={client.imagePath}
+                          alt={client.address}
+                          className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          <Home className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      )}
                     </Link>
                   );
                 })}
