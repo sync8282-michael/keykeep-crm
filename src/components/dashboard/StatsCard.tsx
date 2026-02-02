@@ -3,18 +3,22 @@ import { cn } from "@/lib/utils";
 
 interface StatsCardProps {
   title: string;
+  mobileTitle?: string;
   value: number | string;
   icon: LucideIcon;
   variant?: "default" | "primary" | "success" | "warning";
   description?: string;
 }
 
-export function StatsCard({ title, value, icon: Icon, variant = "default", description }: StatsCardProps) {
+export function StatsCard({ title, mobileTitle, value, icon: Icon, variant = "default", description }: StatsCardProps) {
   return (
     <div className="stat-card">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
+          <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
+            <span className="sm:hidden">{mobileTitle || title}</span>
+            <span className="hidden sm:inline">{title}</span>
+          </p>
           <p className={cn(
             "text-2xl sm:text-3xl font-bold mt-1",
             variant === "primary" && "text-primary",
