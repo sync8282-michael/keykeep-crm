@@ -96,10 +96,10 @@ export default function ClientsLocal() {
                         <img
                           src={client.imagePath}
                           alt={client.address}
-                          className="w-24 h-18 object-cover rounded-lg flex-shrink-0"
+                          className="w-24 h-20 object-cover rounded-lg flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-24 h-18 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <div className="w-24 h-20 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                           <Home className="w-8 h-8 text-primary" />
                         </div>
                       )}
