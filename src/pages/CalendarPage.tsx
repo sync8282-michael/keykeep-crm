@@ -104,33 +104,54 @@ export default function CalendarPage() {
               {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-1">
                 {emptyDays.map((_, i) => (
-                  <div key={`empty-${i}`} className="h-24" />
+                  <div key={`empty-${i}`} className="h-16 sm:h-24" />
                 ))}
                 {daysInMonth.map((day) => {
                   const dayReminders = getReminderForDay(day);
                   const isToday = isSameDay(day, new Date());
                   const isSelected = selectedDate && isSameDay(day, selectedDate);
 
+                  // Group reminders by type for mobile dots
+                  const birthdayCount = dayReminders.filter(r => r.type === "birthday").length;
+                  const otherCount = dayReminders.filter(r => r.type !== "birthday").length;
+
                   return (
                     <button
                       key={day.toISOString()}
                       onClick={() => setSelectedDate(day)}
                       className={cn(
-                        "h-24 p-2 rounded-lg text-left transition-all duration-200 hover:bg-muted",
+                        "h-16 sm:h-24 p-1 sm:p-2 rounded-lg text-left transition-all duration-200 hover:bg-muted",
                         isToday && "bg-primary/5 border border-primary/20",
                         isSelected && "bg-primary/10 border-2 border-primary",
                         !isToday && !isSelected && "border border-transparent"
                       )}
                     >
                       <span className={cn(
-                        "text-sm font-medium",
+                        "text-xs sm:text-sm font-medium",
                         isToday && "text-primary",
                         !isToday && "text-foreground"
                       )}>
                         {format(day, "d")}
                       </span>
 
-                      <div className="mt-1 space-y-1">
+                      {/* Mobile: Compact dots with counts */}
+                      <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
+                        {birthdayCount > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <div className="w-2 h-2 rounded-full bg-pink-500" />
+                            <span className="text-[10px] text-pink-600 font-medium">{birthdayCount}</span>
+                          </div>
+                        )}
+                        {otherCount > 0 && (
+                          <div className="flex items-center gap-0.5">
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                            <span className="text-[10px] text-primary font-medium">{otherCount}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Desktop: Full reminder labels */}
+                      <div className="mt-1 space-y-1 hidden sm:block">
                         {dayReminders.slice(0, 2).map((reminder) => (
                           <div
                             key={reminder.id}
