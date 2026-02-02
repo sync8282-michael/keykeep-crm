@@ -14,8 +14,8 @@ interface StorageUsage {
   isLoading: boolean;
 }
 
-// Cloud storage limit per user (500KB is generous for JSON data)
-const MAX_CLOUD_STORAGE_BYTES = 500 * 1024; // 500KB
+// Cloud storage limit per user (3.5GB)
+const MAX_CLOUD_STORAGE_BYTES = 3.5 * 1024 * 1024 * 1024; // 3.5GB
 
 // Helper to estimate JSON size in bytes
 function getJsonSize(obj: unknown): number {
