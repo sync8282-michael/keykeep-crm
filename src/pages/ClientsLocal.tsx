@@ -91,91 +91,94 @@ export default function ClientsLocal() {
                     <Link
                       key={client.id}
                       to={`/clients/${client.id}`}
-                      className="flex items-center gap-4 p-4 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all"
+                      className="group flex items-stretch gap-5 p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200"
                     >
-                      {/* Profile Picture */}
-                      <Avatar className="h-14 w-14 flex-shrink-0">
+                      {/* Profile Picture - Square */}
+                      <div className="relative flex-shrink-0">
                         {client.avatarPath ? (
-                          <AvatarImage src={client.avatarPath} alt={client.name} />
-                        ) : null}
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold text-lg">
-                          {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
+                          <img
+                            src={client.avatarPath}
+                            alt={client.name}
+                            className="w-20 h-20 object-cover rounded-xl"
+                          />
+                        ) : (
+                          <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                            <span className="text-primary font-bold text-xl">
+                              {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        {/* Property type indicator */}
+                        <div className={cn(
+                          "absolute -bottom-1 -right-1 w-6 h-6 rounded-md flex items-center justify-center shadow-sm",
+                          client.houseType === "house" && "bg-blue-500",
+                          client.houseType === "farm" && "bg-green-500",
+                          client.houseType === "apartment" && "bg-purple-500",
+                          !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary"
+                        )}>
+                          <Home className="w-3.5 h-3.5 text-white" />
+                        </div>
+                      </div>
 
                       {/* Client Info */}
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 flex flex-col justify-center">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-foreground truncate">
+                          <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
                             {client.name}
                           </h3>
-                          <span className={cn(
-                            "badge-property flex-shrink-0 text-xs",
-                            client.houseType === "house" && "badge-house",
-                            client.houseType === "farm" && "badge-farm",
-                            client.houseType === "apartment" && "badge-apartment",
-                            !["house", "farm", "apartment"].includes(client.houseType) && "bg-secondary text-secondary-foreground"
-                          )}>
-                            {client.houseType}
-                          </span>
                         </div>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-sm text-muted-foreground truncate mt-0.5">
                           {client.address}
                         </p>
                         
                         {/* Info row with details */}
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="w-3.5 h-3.5" />
-                            <span>{yearsOwned} year{yearsOwned !== 1 ? "s" : ""} owned</span>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-3.5 h-3.5 text-primary/70" />
+                            <span>{yearsOwned} yr{yearsOwned !== 1 ? "s" : ""}</span>
                           </div>
                           {client.phone && (
-                            <div className="flex items-center gap-1.5">
-                              <Phone className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-1">
+                              <Phone className="w-3.5 h-3.5 text-primary/70" />
                               <span>{client.phone}</span>
                             </div>
                           )}
                           {client.birthday && (
-                            <div className="flex items-center gap-1.5">
-                              <Cake className="w-3.5 h-3.5" />
+                            <div className="flex items-center gap-1">
+                              <Cake className="w-3.5 h-3.5 text-primary/70" />
                               <span>{format(parseISO(client.birthday), "MMM d")}</span>
                             </div>
                           )}
                         </div>
 
                         {/* Contact preferences */}
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-1.5 mt-2">
                           {client.optInEmail && (
-                            <div className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                              <Mail className="w-3 h-3" />
-                              <span>Email</span>
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
+                              <Mail className="w-3 h-3 text-primary" />
                             </div>
                           )}
                           {client.optInWhatsApp && (
-                            <div className="flex items-center gap-1 text-xs text-success bg-success/10 px-2 py-0.5 rounded-full">
-                              <MessageCircle className="w-3 h-3" />
-                              <span>WhatsApp</span>
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
+                              <MessageCircle className="w-3 h-3 text-success" />
                             </div>
                           )}
                           {client.optInSMS && (
-                            <div className="flex items-center gap-1 text-xs text-orange-600 bg-orange-500/10 px-2 py-0.5 rounded-full">
-                              <Phone className="w-3 h-3" />
-                              <span>SMS</span>
+                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500/10">
+                              <Phone className="w-3 h-3 text-orange-500" />
                             </div>
                           )}
                         </div>
                       </div>
 
                       {/* Property Image on the right */}
-                      {client.imagePath ? (
-                        <img
-                          src={client.imagePath}
-                          alt={client.address}
-                          className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                          <Home className="w-6 h-6 text-muted-foreground" />
+                      {client.imagePath && (
+                        <div className="hidden sm:block flex-shrink-0">
+                          <img
+                            src={client.imagePath}
+                            alt={client.address}
+                            className="w-24 h-20 object-cover rounded-lg"
+                          />
                         </div>
                       )}
                     </Link>
