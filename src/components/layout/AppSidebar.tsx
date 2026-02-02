@@ -53,7 +53,7 @@ export function AppSidebar() {
                       className={`flex items-center ${collapsed ? "justify-center !w-10 !h-10 !p-2" : "gap-3 px-3 py-2"} rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors`}
                       activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                     >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <item.icon className="h-6 w-6 flex-shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
@@ -76,7 +76,7 @@ export function AppSidebar() {
                       className={`flex items-center ${collapsed ? "justify-center !w-10 !h-10 !p-2" : "gap-3 px-3 py-2"} rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors`}
                       activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                     >
-                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      <item.icon className="h-6 w-6 flex-shrink-0" />
                       {!collapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
