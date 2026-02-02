@@ -14,6 +14,7 @@ interface BackupData {
 const SYNC_DEBOUNCE_MS = 3000; // 3 seconds debounce
 const SYNC_PENDING_KEY = 'keykeep_sync_pending';
 const LAST_RESTORED_KEY = 'keykeep_last_restored_user';
+const MAX_BACKUP_VERSIONS = 3;
 
 export function useAutoSync() {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ export function useAutoSync() {
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isRestoringRef = useRef(false);
   const hasRestoredRef = useRef(false);
+  const lastBackupIdRef = useRef<string | null>(null);
 
   // Track online/offline status
   useEffect(() => {
@@ -50,6 +52,47 @@ export function useAutoSync() {
     };
   }, []);
 
+  // Cleanup old backups - keep only the newest 3
+  const cleanupOldBackups = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      // Get all backups ordered by created_at desc
+      const { data: backups, error: fetchError } = await supabase
+        .from('backup_snapshots')
+        .select('id, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (fetchError) {
+        console.error('[AutoSync] Error fetching backups for cleanup:', fetchError);
+        return;
+      }
+
+      if (!backups || backups.length <= MAX_BACKUP_VERSIONS) {
+        return; // No cleanup needed
+      }
+
+      // Get IDs of backups to delete (all except the newest 3)
+      const backupsToDelete = backups.slice(MAX_BACKUP_VERSIONS).map(b => b.id);
+
+      if (backupsToDelete.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('backup_snapshots')
+          .delete()
+          .in('id', backupsToDelete);
+
+        if (deleteError) {
+          console.error('[AutoSync] Error deleting old backups:', deleteError);
+        } else {
+          console.log(`[AutoSync] Cleaned up ${backupsToDelete.length} old backup(s)`);
+        }
+      }
+    } catch (error) {
+      console.error('[AutoSync] Cleanup error:', error);
+    }
+  }, [user]);
+
   // Backup to cloud - uses ref for user to avoid stale closures
   const backupToCloud = useCallback(async (silent: boolean = true) => {
     if (!user) return false;
@@ -67,16 +110,23 @@ export function useAutoSync() {
         reminders,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('backup_snapshots')
         .insert([{
           user_id: user.id,
           backup_data: JSON.parse(JSON.stringify(backupData)),
           clients_count: clients.length,
           reminders_count: reminders.length,
-        }]);
+        }])
+        .select('id')
+        .single();
 
       if (error) throw error;
+
+      // Store the ID of this backup to ignore realtime events from self
+      if (data) {
+        lastBackupIdRef.current = data.id;
+      }
 
       // Update local settings with backup date
       await db.settings.update('app', { lastBackupDate: new Date().toISOString() });
@@ -84,6 +134,9 @@ export function useAutoSync() {
       // Clear pending sync flag
       localStorage.removeItem(SYNC_PENDING_KEY);
       setHasPendingChanges(false);
+
+      // Cleanup old backups after successful backup
+      await cleanupOldBackups();
 
       if (!silent) {
         toast({
@@ -103,7 +156,7 @@ export function useAutoSync() {
     } finally {
       setIsSyncing(false);
     }
-  }, [user]);
+  }, [user, cleanupOldBackups]);
 
   // Restore from cloud
   const restoreFromCloud = useCallback(async (silent: boolean = false) => {
@@ -255,6 +308,39 @@ export function useAutoSync() {
       }
     };
   }, []);
+
+  // Subscribe to realtime backup changes for cross-device sync
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('backup_snapshots_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'backup_snapshots',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          // Ignore backups we just created
+          if (payload.new && (payload.new as any).id === lastBackupIdRef.current) {
+            console.log('[AutoSync] Ignoring own backup event');
+            return;
+          }
+
+          // Another device created a backup - restore from it
+          console.log('[AutoSync] New backup detected from another device, restoring...');
+          restoreFromCloud(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, restoreFromCloud]);
 
   return {
     isOnline,
