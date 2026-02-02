@@ -134,40 +134,18 @@ export default function CalendarPage() {
                         {format(day, "d")}
                       </span>
 
-                      {/* Mobile: Compact dots with counts */}
-                      <div className="mt-1 flex flex-wrap gap-1 sm:hidden">
+                      {/* Colored dots with counts - all screen sizes */}
+                      <div className="mt-1 sm:mt-2 flex flex-wrap gap-1 sm:gap-1.5">
                         {birthdayCount > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <div className="w-2 h-2 rounded-full bg-pink-500" />
-                            <span className="text-[10px] text-pink-600 font-medium">{birthdayCount}</span>
+                          <div className="flex items-center gap-0.5 sm:gap-1">
+                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-pink-500" />
+                            <span className="text-[10px] sm:text-xs text-pink-600 dark:text-pink-400 font-medium">{birthdayCount}</span>
                           </div>
                         )}
                         {otherCount > 0 && (
-                          <div className="flex items-center gap-0.5">
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                            <span className="text-[10px] text-primary font-medium">{otherCount}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Desktop: Full reminder labels */}
-                      <div className="mt-1 space-y-1 hidden sm:block">
-                        {dayReminders.slice(0, 2).map((reminder) => (
-                          <div
-                            key={reminder.id}
-                            className={cn(
-                              "text-xs px-1.5 py-0.5 rounded truncate",
-                              reminder.type === "birthday" 
-                                ? "bg-accent/20 text-accent" 
-                                : "bg-primary/20 text-primary"
-                            )}
-                          >
-                            {reminder.title.slice(0, 15)}...
-                          </div>
-                        ))}
-                        {dayReminders.length > 2 && (
-                          <div className="text-xs text-muted-foreground px-1">
-                            +{dayReminders.length - 2} more
+                          <div className="flex items-center gap-0.5 sm:gap-1">
+                            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-primary" />
+                            <span className="text-[10px] sm:text-xs text-primary font-medium">{otherCount}</span>
                           </div>
                         )}
                       </div>
