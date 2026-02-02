@@ -40,17 +40,17 @@ export function AppSidebar() {
         )}
       </SidebarHeader>
 
-      <SidebarContent className={collapsed ? "px-1" : "px-2"}>
+      <SidebarContent className={collapsed ? "px-2" : "px-2"}>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className={collapsed ? "items-center" : ""}>
               {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className={collapsed ? "w-full flex justify-center" : ""}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       to={item.url}
                       end={item.url === "/"}
-                      className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors`}
+                      className={`flex items-center ${collapsed ? "justify-center w-10 h-10 p-0" : "gap-3 px-3 py-2"} rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors`}
                       activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -67,13 +67,13 @@ export function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className={collapsed ? "items-center" : ""}>
               {secondaryNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.title} className={collapsed ? "w-full flex justify-center" : ""}>
                   <SidebarMenuButton asChild tooltip={item.title}>
                     <NavLink
                       to={item.url}
-                      className={`flex items-center ${collapsed ? "justify-center" : "gap-3"} px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors`}
+                      className={`flex items-center ${collapsed ? "justify-center w-10 h-10 p-0" : "gap-3 px-3 py-2"} rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors`}
                       activeClassName="bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
