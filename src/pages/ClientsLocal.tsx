@@ -121,51 +121,51 @@ export default function ClientsLocal() {
                       </div>
 
                       {/* Client Info */}
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
-                            {client.name}
-                          </h3>
-                        </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-center py-0.5">
+                        <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors truncate">
+                          {client.name}
+                        </h3>
                         <p className="text-sm text-muted-foreground truncate mt-0.5">
                           {client.address}
                         </p>
                         
                         {/* Info row with details */}
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5 text-primary/70" />
+                        <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1.5">
+                            <Calendar className="w-4 h-4" />
                             <span>{yearsOwned} yr{yearsOwned !== 1 ? "s" : ""}</span>
                           </div>
                           {client.phone && (
-                            <div className="flex items-center gap-1">
-                              <Phone className="w-3.5 h-3.5 text-primary/70" />
+                            <div className="flex items-center gap-1.5">
+                              <Phone className="w-4 h-4" />
                               <span>{client.phone}</span>
                             </div>
                           )}
                           {client.birthday && (
-                            <div className="flex items-center gap-1">
-                              <Cake className="w-3.5 h-3.5 text-primary/70" />
+                            <div className="flex items-center gap-1.5">
+                              <Cake className="w-4 h-4" />
                               <span>{format(parseISO(client.birthday), "MMM d")}</span>
                             </div>
                           )}
                         </div>
+                      </div>
 
-                        {/* Contact preferences */}
-                        <div className="flex items-center gap-1.5 mt-2">
+                      {/* Contact preferences - Right side */}
+                      <div className="flex flex-col items-end justify-center gap-2 flex-shrink-0">
+                        <div className="flex items-center gap-2">
                           {client.optInEmail && (
-                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10">
-                              <Mail className="w-3 h-3 text-primary" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                              <Mail className="w-4 h-4 text-primary" />
                             </div>
                           )}
                           {client.optInWhatsApp && (
-                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-success/10">
-                              <MessageCircle className="w-3 h-3 text-success" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-success/10 hover:bg-success/20 transition-colors">
+                              <MessageCircle className="w-4 h-4 text-success" />
                             </div>
                           )}
                           {client.optInSMS && (
-                            <div className="flex items-center justify-center w-6 h-6 rounded-full bg-orange-500/10">
-                              <Phone className="w-3 h-3 text-orange-500" />
+                            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-500/10 hover:bg-orange-500/20 transition-colors">
+                              <Phone className="w-4 h-4 text-orange-500" />
                             </div>
                           )}
                         </div>
