@@ -25,6 +25,7 @@ export function useAutoSync() {
   const isRestoringRef = useRef(false);
   const hasRestoredRef = useRef(false);
   const lastBackupIdRef = useRef<string | null>(null);
+  const restoreFromCloudRef = useRef<((silent?: boolean) => Promise<boolean>) | null>(null);
 
   // Track online/offline status
   useEffect(() => {
@@ -310,8 +311,7 @@ export function useAutoSync() {
   }, []);
 
   // Subscribe to realtime backup changes for cross-device sync
-  // Use a ref for restoreFromCloud to avoid subscription recreation
-  const restoreFromCloudRef = useRef(restoreFromCloud);
+  // Keep restoreFromCloud ref updated
   useEffect(() => {
     restoreFromCloudRef.current = restoreFromCloud;
   }, [restoreFromCloud]);
@@ -342,7 +342,7 @@ export function useAutoSync() {
 
           // Another device created a backup - restore from it
           console.log('[AutoSync] New backup detected from another device, restoring...');
-          restoreFromCloudRef.current(true);
+          restoreFromCloudRef.current?.(true);
         }
       )
       .subscribe((status) => {
