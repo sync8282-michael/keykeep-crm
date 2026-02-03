@@ -439,21 +439,6 @@ export function ClientFormLocal({ onSubmit, onCancel, initialData, isLoading }: 
           </Popover>
         </div>
 
-        <div className="space-y-2">
-          <Label>Preferred Contact Method</Label>
-          <Select value={preferredContactMethod} onValueChange={(v) => setPreferredContactMethod(v as Client['preferredContactMethod'])}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select method" />
-            </SelectTrigger>
-            <SelectContent>
-              {contactMethods.map((method) => (
-                <SelectItem key={method.value} value={method.value}>
-                  {method.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
 
         <div className="space-y-2">
           <Label htmlFor="imagePath">Property Image URL (optional)</Label>
