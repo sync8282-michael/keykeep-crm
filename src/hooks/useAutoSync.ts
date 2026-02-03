@@ -310,11 +310,19 @@ export function useAutoSync() {
   }, []);
 
   // Subscribe to realtime backup changes for cross-device sync
+  // Use a ref for restoreFromCloud to avoid subscription recreation
+  const restoreFromCloudRef = useRef(restoreFromCloud);
+  useEffect(() => {
+    restoreFromCloudRef.current = restoreFromCloud;
+  }, [restoreFromCloud]);
+
   useEffect(() => {
     if (!user) return;
 
+    console.log('[AutoSync] Setting up realtime subscription for user:', user.id);
+
     const channel = supabase
-      .channel('backup_snapshots_changes')
+      .channel(`backup_changes_${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -324,6 +332,8 @@ export function useAutoSync() {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
+          console.log('[AutoSync] Realtime event received:', payload);
+          
           // Ignore backups we just created
           if (payload.new && (payload.new as any).id === lastBackupIdRef.current) {
             console.log('[AutoSync] Ignoring own backup event');
@@ -332,15 +342,18 @@ export function useAutoSync() {
 
           // Another device created a backup - restore from it
           console.log('[AutoSync] New backup detected from another device, restoring...');
-          restoreFromCloud(true);
+          restoreFromCloudRef.current(true);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[AutoSync] Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('[AutoSync] Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
-  }, [user, restoreFromCloud]);
+  }, [user?.id]); // Only depend on user.id to prevent recreation
 
   return {
     isOnline,
