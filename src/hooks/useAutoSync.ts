@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { db, Client, Reminder } from '@/db/database';
 import { useAuth } from '@/auth/AuthProvider';
 import { toast } from '@/hooks/use-toast';
+import { validateBackupFile } from '@/lib/backupValidation';
 
 interface BackupData {
   version: number;
@@ -187,27 +188,30 @@ export function useAutoSync() {
         throw error;
       }
 
-      const backupData = data.backup_data as unknown as BackupData;
-
-      if (!backupData.clients) {
-        throw new Error('Invalid backup data format');
+      // Validate the backup data
+      const validationResult = await validateBackupFile(data.backup_data);
+      
+      if (!validationResult.success) {
+        throw new Error(validationResult.error || 'Invalid backup data format');
       }
 
+      const validatedData = validationResult.data!;
+
       console.log('[AutoSync] Restoring data:', {
-        clients: backupData.clients.length,
-        reminders: backupData.reminders?.length || 0
+        clients: validatedData.clients.length,
+        reminders: validatedData.reminders?.length || 0
       });
 
-      // Clear existing local data and restore from backup
+      // Clear existing local data and restore from validated backup
       await db.clients.clear();
       await db.reminders.clear();
 
-      if (backupData.clients.length > 0) {
-        await db.clients.bulkAdd(backupData.clients);
+      if (validatedData.clients.length > 0) {
+        await db.clients.bulkAdd(validatedData.clients as unknown as Client[]);
       }
 
-      if (backupData.reminders && backupData.reminders.length > 0) {
-        await db.reminders.bulkAdd(backupData.reminders);
+      if (validatedData.reminders && validatedData.reminders.length > 0) {
+        await db.reminders.bulkAdd(validatedData.reminders as unknown as Reminder[]);
       }
 
       // Mark this user as restored
@@ -219,7 +223,7 @@ export function useAutoSync() {
       if (!silent) {
         toast({
           title: "Data Restored",
-          description: `Loaded ${backupData.clients.length} clients and ${backupData.reminders?.length || 0} reminders from cloud.`,
+          description: `Loaded ${validatedData.clients.length} clients and ${validatedData.reminders?.length || 0} reminders from cloud.`,
         });
       }
 

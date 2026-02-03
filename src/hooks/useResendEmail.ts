@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useSettings } from './useSettings';
+import { supabase } from '@/integrations/supabase/client';
 import { db, Client } from '@/db/database';
 import { toast } from '@/hooks/use-toast';
 import { format, parseISO, differenceInYears } from 'date-fns';
@@ -10,7 +10,6 @@ interface EmailTemplate {
 }
 
 export function useResendEmail() {
-  const { settings } = useSettings();
   const [isSending, setIsSending] = useState(false);
 
   const generateAnniversaryEmail = useCallback((client: Client): EmailTemplate => {
@@ -128,15 +127,6 @@ export function useResendEmail() {
   }, []);
 
   const sendAnniversaryEmail = useCallback(async (client: Client) => {
-    if (!settings?.resendApiKey) {
-      toast({
-        title: "API Key Missing",
-        description: "Please add your Resend API key in Settings.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     if (!client.email || !client.optInEmail) {
       toast({
         title: "Cannot Send Email",
@@ -148,27 +138,20 @@ export function useResendEmail() {
 
     setIsSending(true);
     try {
-      const template = generateAnniversaryEmail(client);
-
-      // Note: This would typically go through an edge function for security
-      // For now, we'll show how to call the Resend API
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${settings.resendApiKey}`,
-          'Content-Type': 'application/json',
+      // Call the secure edge function instead of direct API call
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          clientId: client.id,
+          templateType: 'anniversary',
         },
-        body: JSON.stringify({
-          from: 'KeyKeep Pro <onboarding@resend.dev>', // Replace with verified domain
-          to: [client.email],
-          subject: template.subject,
-          html: template.html,
-        }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
+      if (error) {
         throw new Error(error.message || 'Failed to send email');
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       toast({
@@ -187,7 +170,52 @@ export function useResendEmail() {
     } finally {
       setIsSending(false);
     }
-  }, [settings?.resendApiKey, generateAnniversaryEmail]);
+  }, []);
+
+  const sendBirthdayEmail = useCallback(async (client: Client) => {
+    if (!client.email || !client.optInEmail) {
+      toast({
+        title: "Cannot Send Email",
+        description: client.email ? "Client has not opted in to emails." : "No email address on file.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    setIsSending(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          clientId: client.id,
+          templateType: 'birthday',
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to send email');
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: "Email Sent!",
+        description: `Birthday email sent to ${client.name}.`,
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast({
+        title: "Email Failed",
+        description: error instanceof Error ? error.message : "Could not send birthday email.",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setIsSending(false);
+    }
+  }, []);
 
   const sendBulkAnniversaryEmails = useCallback(async (clients: Client[]) => {
     const eligibleClients = clients.filter(c => c.email && c.optInEmail);
@@ -218,6 +246,7 @@ export function useResendEmail() {
   return {
     isSending,
     sendAnniversaryEmail,
+    sendBirthdayEmail,
     sendBulkAnniversaryEmails,
     generateAnniversaryEmail,
   };

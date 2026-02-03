@@ -117,7 +117,20 @@ export function getClients(): Client[] {
     localStorage.setItem(STORAGE_KEYS.clients, JSON.stringify(demoClients));
     return demoClients;
   }
-  return JSON.parse(stored);
+  try {
+    const parsed = JSON.parse(stored);
+    // Basic validation: ensure it's an array
+    if (!Array.isArray(parsed)) {
+      console.warn('[store] Invalid clients data, resetting to demo');
+      localStorage.setItem(STORAGE_KEYS.clients, JSON.stringify(demoClients));
+      return demoClients;
+    }
+    return parsed;
+  } catch {
+    console.warn('[store] Failed to parse clients, resetting to demo');
+    localStorage.setItem(STORAGE_KEYS.clients, JSON.stringify(demoClients));
+    return demoClients;
+  }
 }
 
 export function saveClients(clients: Client[]): void {
@@ -130,7 +143,19 @@ export function getProperties(): Property[] {
     localStorage.setItem(STORAGE_KEYS.properties, JSON.stringify(demoProperties));
     return demoProperties;
   }
-  return JSON.parse(stored);
+  try {
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) {
+      console.warn('[store] Invalid properties data, resetting to demo');
+      localStorage.setItem(STORAGE_KEYS.properties, JSON.stringify(demoProperties));
+      return demoProperties;
+    }
+    return parsed;
+  } catch {
+    console.warn('[store] Failed to parse properties, resetting to demo');
+    localStorage.setItem(STORAGE_KEYS.properties, JSON.stringify(demoProperties));
+    return demoProperties;
+  }
 }
 
 export function saveProperties(properties: Property[]): void {
@@ -143,7 +168,19 @@ export function getReminders(): Reminder[] {
     localStorage.setItem(STORAGE_KEYS.reminders, JSON.stringify(demoReminders));
     return demoReminders;
   }
-  return JSON.parse(stored);
+  try {
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) {
+      console.warn('[store] Invalid reminders data, resetting to demo');
+      localStorage.setItem(STORAGE_KEYS.reminders, JSON.stringify(demoReminders));
+      return demoReminders;
+    }
+    return parsed;
+  } catch {
+    console.warn('[store] Failed to parse reminders, resetting to demo');
+    localStorage.setItem(STORAGE_KEYS.reminders, JSON.stringify(demoReminders));
+    return demoReminders;
+  }
 }
 
 export function saveReminders(reminders: Reminder[]): void {
