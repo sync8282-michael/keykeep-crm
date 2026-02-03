@@ -1,6 +1,7 @@
 import { db, Client } from '@/db/database';
 import { useCallback } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { validateBackupFile, MAX_FILE_SIZE_MB } from '@/lib/backupValidation';
 
 interface BackupData {
   version: number;
@@ -45,16 +46,36 @@ export function useBackup() {
 
   const importData = useCallback(async (file: File) => {
     try {
-      const text = await file.text();
-      const data: BackupData = JSON.parse(text);
-
-      if (!data.version || !data.clients) {
-        throw new Error('Invalid backup file format');
+      // Validate file size first
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: `Maximum file size is ${MAX_FILE_SIZE_MB}MB.`,
+          variant: "destructive",
+        });
+        return false;
       }
 
-      // Clear existing data and import new
+      // Validate backup file using schema validation
+      const validationResult = await validateBackupFile(file);
+
+      if (!validationResult.success) {
+        toast({
+          title: "Invalid Backup",
+          description: validationResult.error || "Could not read backup file.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const data = validationResult.data!;
+
+      // Clear existing data and import validated data
       await db.clients.clear();
-      await db.clients.bulkAdd(data.clients);
+      if (data.clients.length > 0) {
+        // Cast validated data to Client type - validation ensures structure is compatible
+        await db.clients.bulkAdd(data.clients as unknown as Client[]);
+      }
 
       toast({
         title: "Import Complete",
@@ -63,6 +84,7 @@ export function useBackup() {
 
       return true;
     } catch (error) {
+      console.error('Import error:', error);
       toast({
         title: "Import Failed",
         description: "Could not read backup file. Make sure it's a valid KeyKeep backup.",

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { db } from '@/db/database';
 import { useSettings } from './useSettings';
 import { toast } from '@/hooks/use-toast';
+import { validateBackupFile, MAX_FILE_SIZE_MB } from '@/lib/backupValidation';
 
 const CLIENT_ID = ''; // User needs to add their own Google Cloud Client ID
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
@@ -283,24 +284,28 @@ export function useGoogleDrive() {
         alt: 'media',
       });
 
-      const backupData = JSON.parse(response.body);
-
-      // Validate backup data
-      if (!backupData.clients || !Array.isArray(backupData.clients)) {
-        throw new Error('Invalid backup format');
+      // Validate the backup data using schema validation
+      const validationResult = await validateBackupFile(response.body);
+      
+      if (!validationResult.success) {
+        throw new Error(validationResult.error || 'Invalid backup format');
       }
 
-      // Clear existing data and restore
-      await db.clients.clear();
-      await db.clients.bulkPut(backupData.clients);
+      const validatedData = validationResult.data!;
 
-      if (backupData.settings) {
-        await db.settings.put({ ...backupData.settings, id: 'app' });
+      // Clear existing data and restore validated data
+      await db.clients.clear();
+      if (validatedData.clients.length > 0) {
+        await db.clients.bulkPut(validatedData.clients as any[]);
+      }
+
+      if (validatedData.settings) {
+        await db.settings.put({ ...validatedData.settings, id: 'app' } as any);
       }
 
       toast({
         title: "Restore Complete",
-        description: `Restored ${backupData.clients.length} clients from backup.`,
+        description: `Restored ${validatedData.clients.length} clients from backup.`,
       });
     } catch (error) {
       console.error('Restore failed:', error);
